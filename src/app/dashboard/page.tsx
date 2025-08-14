@@ -1,55 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
-interface Admin {
-  id: string
-  name: string
-  email: string
-  role: string
-  status: string
-  dateCreated: string
-}
-
-interface Task {
-  id: string
-  name: string
-  social: string
-  description: string
-  type: string
-  reward: string
-  deadline: string
-  conclusion: number
-  link: string
-  dateCreation: string
-  author: string
-}
-
-interface ShopItem {
-  id: string
-  image: string
-  name: string
-  description: string
-  price: string
-  sales: string
-  dateCreation: string
-}
-
-interface Badge {
-  id: string
-  image: string
-  name: string
-  description: string
-  price: string
-  sales: string
-  dateCreation: string
-}
+import { useAuth, useAdmins, useTasks, useShopItems, useBadges } from '@/hooks'
+import type { Admin, Task, ShopItem, Badge, CreateAdminData } from '@/types'
 
 type ActiveTab = 'Admins' | 'Tasks' | 'Shop' | 'Badges'
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('Admins')
-  const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
+  const { admins: realAdmins, createAdmin } = useAdmins()
+  const { tasks: realTasks } = useTasks()
+  const { items: realItems } = useShopItems()
+  const { badges: realBadges } = useBadges()
   
   // Form data for admin
   const [adminForm, setAdminForm] = useState({
@@ -58,82 +21,44 @@ export default function AdminDashboard() {
     password: '',
     confirmPassword: ''
   })
-  
-  // Mock data
-  const [admins, setAdmins] = useState<Admin[]>([])
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [shopItems, setShopItems] = useState<ShopItem[]>([])
-  const [badges, setBadges] = useState<Badge[]>([])
 
-  useEffect(() => {
-    // Load mock data
-    setTimeout(() => {
-      setAdmins([
-        { id: '#1', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#2', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#3', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#4', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#5', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#6', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#7', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#8', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#9', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-        { id: '#10', name: 'Connect Discord', email: 'Adminlogindgmail.com', role: 'Connect Discord', status: 'Active', dateCreated: '17/02/2024' },
-      ])
-
-      setTasks([
-        { id: '#1', name: 'Connect Discord', social: 'Log in with Discord Online', description: 'Comment', type: '10 Carrots', reward: 'ONGOING', deadline: 'Openlink', conclusion: 15, link: '17/01/2025', dateCreation: 'ONGOING', author: 'Author Name' },
-        { id: '#2', name: 'Connect Discord', social: 'Log in with Discord Online', description: 'Comment', type: '10 Carrots', reward: 'ONGOING', deadline: 'Openlink', conclusion: 15, link: '17/01/2025', dateCreation: 'ONGOING', author: 'Author Name' },
-        { id: '#3', name: 'Connect Discord', social: 'Log in with Discord Online', description: 'Comment', type: '10 Carrots', reward: 'ONGOING', deadline: 'Openlink', conclusion: 15, link: '17/01/2025', dateCreation: 'ONGOING', author: 'Author Name' },
-        { id: '#4', name: 'Connect Discord', social: 'Log in with Discord Online', description: 'Comment', type: '10 Carrots', reward: 'ONGOING', deadline: 'Openlink', conclusion: 15, link: '17/01/2025', dateCreation: 'ONGOING', author: 'Author Name' },
-        { id: '#5', name: 'Connect Discord', social: 'Log in with Discord Online', description: 'Comment', type: '10 Carrots', reward: 'ONGOING', deadline: 'Openlink', conclusion: 15, link: '17/01/2025', dateCreation: 'ONGOING', author: 'Author Name' },
-      ])
-
-      setShopItems([
-        { id: '#1', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#2', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#3', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#4', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#5', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-      ])
-
-      setBadges([
-        { id: '#1', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#2', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#3', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#4', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-        { id: '#5', image: '📦', name: 'Product', description: 'A very great and well described prod...', price: '15 Carrots', sales: '250,100 sales', dateCreation: '17/01/2025' },
-      ])
-
-      setLoading(false)
-    }, 300)
-  }, [])
-
-  const handleAdminSubmit = (e: React.FormEvent) => {
+  const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Admin form submitted:', adminForm)
-    // Reset form
-    setAdminForm({
-      adminName: '',
-      email: '',
-      password: '',
-      confirmPassword: ''
+    
+    if (adminForm.password !== adminForm.confirmPassword) {
+      alert('Passwords do not match')
+      return
+    }
+
+    const result = await createAdmin({
+      name: adminForm.adminName,
+      email: adminForm.email,
+      password: adminForm.password,
+      isSuperAdmin: false
     })
+
+    if (result.success) {
+      alert('Admin created successfully!')
+      setAdminForm({
+        adminName: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+      })
+    } else {
+      alert(`Error creating admin: ${result.error}`)
+    }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
+  // Usar diretamente os dados da API sem conversão desnecessária
+  const admins: Admin[] = realAdmins
+  const tasks: Task[] = realTasks  
+  const shopItems: ShopItem[] = realItems
+  const badges: Badge[] = realBadges
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <h1>{user?.name || user?.email || 'Admin'}</h1>
       {/* Tab Navigation */}
       <div className="bg-white border-b border-gray-200">
         <div className="px-6">
@@ -157,7 +82,7 @@ export default function AdminDashboard() {
 
       {/* Content */}
       <div className="p-6">
-        {activeTab === 'Admins' && (
+        {activeTab === 'Admins' && user?.isSuper && (
           <div className="grid grid-cols-12 gap-6">
             {/* Left Side - Admin Form */}
             <div className="col-span-4">
@@ -203,6 +128,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setAdminForm({ ...adminForm, password: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Enter Password"
+                      required
                     />
                   </div>
 
@@ -216,6 +142,7 @@ export default function AdminDashboard() {
                       onChange={(e) => setAdminForm({ ...adminForm, confirmPassword: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="Confirm Password"
+                      required
                     />
                   </div>
 
@@ -231,6 +158,12 @@ export default function AdminDashboard() {
                   <div className="flex gap-3 pt-6">
                     <button
                       type="button"
+                      onClick={() => setAdminForm({
+                        adminName: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: ''
+                      })}
                       className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
                     >
                       Cancel
@@ -263,17 +196,17 @@ export default function AdminDashboard() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {admins.map((admin, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm text-gray-900">{admin.id}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{admin.name}</td>
+                      <tr key={admin.adminId} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{admin.name || 'N/A'}</td>
                         <td className="px-4 py-3 text-sm text-gray-900">{admin.email}</td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{admin.role}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{admin.isSuperAdmin ? 'Super Admin' : 'Admin'}</td>
                         <td className="px-4 py-3 text-sm">
                           <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-                            {admin.status}
+                            Active
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-900">{admin.dateCreated}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{new Date(admin.createdAt).toLocaleDateString('pt-BR')}</td>
                         <td className="px-4 py-3 text-sm">
                           <div className="flex space-x-2">
                             <button className="text-blue-600 hover:text-blue-900">✏️</button>
@@ -286,6 +219,14 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'Admins' && !user?.isSuper && (
+          <div className="text-center py-12">
+            <div className="text-red-400 text-6xl mb-4">🚫</div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Access Denied</h3>
+            <p className="text-gray-600">Only super admins can access this section.</p>
           </div>
         )}
 
@@ -328,22 +269,22 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {tasks.map((task, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900">{task.id}</td>
+                    <tr key={task.taskId} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
                       <td className="px-4 py-3 text-sm text-gray-900">{task.name}</td>
-                      <td className="px-4 py-3 text-sm text-blue-600">{task.social}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{task.description}</td>
+                      <td className="px-4 py-3 text-sm text-blue-600">{task.type}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{task.description || 'N/A'}</td>
                       <td className="px-4 py-3 text-sm">
                         <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                          Comment
+                          {task.isDaily ? 'Daily' : 'One-time'}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{task.type}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{task.reward}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{task.conclusion}</td>
-                      <td className="px-4 py-3 text-sm text-blue-600">{task.deadline}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{task.link}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{task.author}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{task.points} Points</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{new Date(task.deadline).toLocaleDateString('pt-BR')}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{task._count.taskCompletions}</td>
+                      <td className="px-4 py-3 text-sm text-blue-600">{task.link || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{new Date(task.createdAt).toLocaleDateString('pt-BR')}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{task.admin.name || task.admin.email}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex space-x-2">
                           <button className="text-blue-600 hover:text-blue-900">✏️</button>
@@ -393,18 +334,18 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {shopItems.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.id}</td>
+                    <tr key={item.shopItemId} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                          📦
+                          {item.image || '📦'}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{item.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.description}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.price}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.sales}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{item.dateCreation}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{item.description || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">${item.price}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{item.quantity} units</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{new Date(item.createdAt).toLocaleDateString('pt-BR')}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex space-x-2">
                           <button className="text-blue-600 hover:text-blue-900">✏️</button>
@@ -454,18 +395,18 @@ export default function AdminDashboard() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {badges.map((badge, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm text-gray-900">{badge.id}</td>
+                    <tr key={badge.badgeId} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                          📦
+                          {badge.image || '🏆'}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-900">{badge.name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{badge.description}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{badge.price}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{badge.sales}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{badge.dateCreation}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{badge.description || 'N/A'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{badge.title}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">N/A</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{new Date(badge.createdAt).toLocaleDateString('pt-BR')}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex space-x-2">
                           <button className="text-blue-600 hover:text-blue-900">✏️</button>

@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useAuth } from '@/hooks'
 import { useRouter } from 'next/navigation'
-import { User } from '@/lib/auth'
+import { useEffect } from 'react'
 import Header from '@/components/Header'
 
 export default function DashboardLayout({
@@ -10,34 +10,14 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, loading, isAuthenticated } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    const validateAuth = () => {
-      // Mock authentication - check for token in localStorage
-      const token = localStorage.getItem('token')
-      const userData = localStorage.getItem('user')
-      
-      if (!token || !userData) {
-        router.push('/login')
-        return
-      }
-
-      try {
-        const parsedUser = JSON.parse(userData)
-        setUser(parsedUser)
-      } catch (error) {
-        console.error('Failed to parse user data:', error)
-        router.push('/login')
-      } finally {
-        setLoading(false)
-      }
+    if (!loading && !isAuthenticated) {
+      router.push('/login')
     }
-
-    validateAuth()
-  }, [router])
+  }, [loading, isAuthenticated, router])
 
   if (loading) {
     return (
@@ -50,7 +30,7 @@ export default function DashboardLayout({
     )
   }
 
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return null
   }
 

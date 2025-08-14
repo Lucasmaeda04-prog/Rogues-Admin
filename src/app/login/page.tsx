@@ -1,25 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks'
 
 const imgSlider = "/assets/966ff5a3a1514cf0f3a52701a6dd51451b9d4b7b.png"
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [useMockAuth, setUseMockAuth] = useState(false)
+  const { login, loading, error, isAuthenticated } = useAuth()
   const router = useRouter()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard')
+    }
+  }, [isAuthenticated, router])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError('')
-
-    // Simulate login delay
-    setTimeout(() => {
-      // Mock authentication - just store a fake token and redirect
+    
+    if (useMockAuth) {
+      // Mock authentication - temporary fallback
       localStorage.setItem('token', 'mock-token')
       localStorage.setItem('user', JSON.stringify({
         id: '1',
@@ -28,8 +33,30 @@ export default function LoginPage() {
         role: email.includes('super') ? 'super_admin' : 'admin'
       }))
       router.push('/dashboard')
-      setLoading(false)
-    }, 1000)
+      return
+    }
+    
+    try {
+      const result = await login(email, password)
+      
+      if (!result.success && result.error) {
+        console.error('Login failed:', result.error)
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+    }
+  }
+
+  // Show loading while checking authentication
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#09171a]"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -92,6 +119,19 @@ export default function LoginPage() {
               />
             </div>
 
+            <div className="flex items-center space-x-2 mb-4">
+              <input
+                type="checkbox"
+                id="useMockAuth"
+                checked={useMockAuth}
+                onChange={(e) => setUseMockAuth(e.target.checked)}
+                className="rounded"
+              />
+              <label htmlFor="useMockAuth" className="text-sm text-gray-600">
+                Use mock authentication (for development)
+              </label>
+            </div>
+          
             <button
               type="submit"
               disabled={loading}
