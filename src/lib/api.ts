@@ -210,6 +210,12 @@ export class ApiClient {
     })
   }
 
+  async deleteAdmin(adminId: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/auth/admin/${adminId}`, {
+      method: 'DELETE',
+    })
+  }
+
   // System endpoints
   async getHealth(): Promise<{ status: string; timestamp: string }> {
     return this.request<{ status: string; timestamp: string }>('/health')

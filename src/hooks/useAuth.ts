@@ -142,6 +142,19 @@ export function useAdmins() {
     }
   }, [fetchAdmins])
 
+  const deleteAdmin = useCallback(async (adminId: string) => {
+    try {
+      await api.deleteAdmin(adminId)
+      await fetchAdmins() // Refresh the list after deletion
+      return { success: true }
+    } catch (err) {
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to delete admin' 
+      }
+    }
+  }, [fetchAdmins])
+
   useEffect(() => {
     fetchAdmins()
   }, [fetchAdmins])
@@ -151,6 +164,7 @@ export function useAdmins() {
     loading,
     error,
     createAdmin,
+    deleteAdmin,
     refreshAdmins: fetchAdmins
   }
 }
