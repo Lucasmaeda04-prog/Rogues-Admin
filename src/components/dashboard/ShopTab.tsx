@@ -1,9 +1,51 @@
 'use client'
 
+import { useState } from 'react'
 import { useShopItems } from '@/hooks'
+import { api } from '@/lib/api'
+import { CreateShopItemData } from '@/types'
+import CreateShopItemModal, { ShopItemFormData } from '@/components/modals/CreateShopItemModal'
 
 export default function ShopTab() {
   const { items } = useShopItems()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleCreateItem = async (data: ShopItemFormData) => {
+    setIsLoading(true)
+    try {
+      // Transform ShopItemFormData to CreateShopItemData
+      const createData: CreateShopItemData = {
+        name: data.name,
+        description: data.description,
+        image: data.image,
+        price: data.price,
+        tag: data.tag,
+        categoryId: 1, // Default category, you may want to make this configurable
+        available: true,
+        quantity: data.quantity
+      }
+
+      console.log('Creating shop item:', createData)
+      
+      // Make API call to create shop item
+      const response = await api.createShopItem(createData)
+      
+      console.log('Shop item created successfully:', response)
+      
+      setIsModalOpen(false)
+      
+      // Optionally, you could refresh the items list here
+      // window.location.reload() or call a refresh function
+      
+    } catch (error) {
+      console.error('Error creating shop item:', error)
+      // Optionally show an error message to the user
+      alert('Error creating shop item: ' + (error as Error).message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="animate-fadeIn">
@@ -19,7 +61,10 @@ export default function ShopTab() {
             </select>
           </div>
         </div>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        >
           + Create Item
         </button>
       </div>
@@ -63,6 +108,13 @@ export default function ShopTab() {
           </tbody>
         </table>
       </div>
+
+      <CreateShopItemModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleCreateItem}
+        isLoading={isLoading}
+      />
     </div>
   )
 }

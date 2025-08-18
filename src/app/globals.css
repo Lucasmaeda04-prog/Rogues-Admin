@@ -1,39 +1,183 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer components {
+  .text-rogues-default-150 {
+    color: #EC1751;
   }
+}
+
+::-webkit-scrollbar {
+  display: none;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #000;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
+.tooltip-content {
+  transition: all 0.2s ease-in-out;
+}
+
+.tooltip:hover .tooltip-content {
+  opacity: 1;
+}
+
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  background: var(--tooltip-background, #ffffff12);
+  width: 10px;
+  height: 10px;
+  transform: rotate(45deg);
+  border-left: 0.5px solid #ffffff12;
+  border-top: 0.5px solid #ffffff12;
+}
+
+.tooltip-content.top {
+  top: -42px;
+}
+
+.tooltip-content.top::after {
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  bottom: -5px;
+}
+
+.tooltip-content.left {
+  top: -22px;
+  right: calc(100% + 21px);
+}
+
+.tooltip-content.left::after {
+  right: -5.5px;
+  transform: rotate(135deg);
+}
+
+.tooltip-content.right {
+  left: calc(100% + 12px);
+}
+
+.tooltip-content.right::after {
+  left: -5px;
+}
+
+.tooltip-content.bottom {
+  top: 30px;
+}
+
+.tooltip-content.bottom::after {
+  top: -5px;
+}
+
+@keyframes textBlink {
+  0% {
+    color: white;
   }
-  to {
-    opacity: 1;
+  20%,
+  60% {
+    color: #ec1751;
+  }
+  40%,
+  80% {
+    color: white;
+  }
+  100% {
+    color: #ec1751;
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.15s ease-out;
+.text-fill-hover {
+  color: white;
+  transition: color 0.2s ease-in-out;
+}
+
+.text-fill-hover:hover {
+  animation: textBlink 0.4s ease-in-out 2 forwards;
+}
+
+@keyframes pulseCustom {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+.animation_dot {
+  animation: pulseCustom 1.5s infinite;
+  transition: transform 0.3s ease;
+}
+
+.gradient-border-wrapper {
+  position: relative;
+  padding: 2px;
+  border-radius: 16px;
+  display: inline-block;
+  background: conic-gradient(
+    from 240deg,
+    #ec1751 0%,
+    #ff5e7c 25%,
+    #f74868 28%,
+    #0a6bbf 75%,
+    #ec1751 100%
+  );
+  box-shadow:
+    0 0 14px rgba(255, 94, 124, 0.2),
+    0 0 20px rgba(247, 72, 104, 0.2),
+    0 0 40px rgba(10, 107, 191, 0.2);
+}
+
+.gradient-border-card {
+  border-radius: 16px;
+  width: 100%;
+  height: 100%;
+}
+
+.mobile-slider-open {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(24px);
+}
+
+.Toastify__progress-bar--bg {
+  opacity: 0 !important;
+  background: none !important;
+}
+
+.Toastify__progress-bar-theme--light {
+  background: none !important;
+}
+
+.custom-toast-progress {
+  background: #ec1751 !important;
+  background-image: none;
+  height: 4px !important;
+  border-radius: 0px 0px 6px 6px;
+  box-shadow: none;
+}
+
+.animate-loading {
+  background: rgba(40, 48, 58, 0.4);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1200px 0;
+  }
+  100% {
+    background-position: 1200px 0;
+  }
+}
+
+.shimmer-bg {
+  background: linear-gradient(to right, #1f1f1f 8%, #2a2a2a 18%, #1f1f1f 33%);
+  background-size: 1200px 100%;
+  animation: shimmer 3.5s infinite linear;
 }

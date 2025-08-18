@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 export interface FormField {
   name: string
@@ -47,7 +47,7 @@ export default function GenericForm({
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  useEffect(() => {
+  const memoizedInitialData = useMemo(() => {
     const initData: Record<string, any> = {}
     config.fields.forEach(field => {
       if (field.type === 'checkbox') {
@@ -56,8 +56,12 @@ export default function GenericForm({
         initData[field.name] = initialData[field.name] ?? ''
       }
     })
-    setFormData(initData)
-  }, [config.fields, initialData])
+    return initData
+  }, [config.fields.length, JSON.stringify(initialData)])
+
+  useEffect(() => {
+    setFormData(memoizedInitialData)
+  }, [memoizedInitialData])
 
   const validateField = (field: FormField, value: any): string | null => {
     if (field.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
