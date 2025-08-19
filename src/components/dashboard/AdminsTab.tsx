@@ -9,7 +9,7 @@ import { EditIcon, DeleteIcon } from '@/components/Icons'
 
 export default function AdminsTab() {
   const { user } = useAuth()
-  const { admins, createAdmin, deleteAdmin } = useAdmins()
+  const { admins, createAdmin, updateAdmin, deleteAdmin } = useAdmins()
   const [isLoading, setIsLoading] = useState(false)
   const [editingAdmin, setEditingAdmin] = useState<any | null>(null)
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
@@ -45,15 +45,35 @@ export default function AdminsTab() {
       
       setIsLoading(false)
     } else if (formMode === 'edit') {
-      // Handle edit mode (you might need to implement updateAdmin in your hooks)
+      // Validate password confirmation for edit mode if password is being changed
+      if (formData.password && formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match')
+        return
+      }
+
       setIsLoading(true)
       
       try {
-        // Note: You'll need to implement updateAdmin function in your hooks/API
-        // For now, showing the pattern:
-        console.log('Updating admin:', editingAdmin?.adminId, formData)
-        alert('Edit functionality would update admin here')
-        handleResetForm()
+        // Prepare update data - only include password if it's being changed
+        const updateData: any = {
+          name: formData.adminName,
+          email: formData.email,
+          isSuperAdmin: formData.isSuper
+        }
+
+        // Only include password if it's being changed (not empty)
+        if (formData.password && formData.password.trim() !== '') {
+          updateData.password = formData.password
+        }
+
+        const result = await updateAdmin(editingAdmin?.adminId, updateData)
+        
+        if (result.success) {
+          alert('Admin updated successfully!')
+          handleResetForm()
+        } else {
+          alert(`Error updating admin: ${result.error}`)
+        }
       } catch (error) {
         alert(`Error updating admin: ${error}`)
       }

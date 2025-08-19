@@ -272,6 +272,13 @@ export class ApiClient {
     })
   }
 
+  async updateAdmin(adminId: string, data: Partial<CreateAdminData>): Promise<{ message: string; admin: any }> {
+    return this.request<{ message: string; admin: any }>(`/auth/${adminId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  }
+
   async deleteAdmin(adminId: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/auth/${adminId}`, {
       method: 'DELETE',

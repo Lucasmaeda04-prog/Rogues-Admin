@@ -88,6 +88,39 @@ export const adminEditFormConfig: FormConfig = {
       }
     },
     {
+      name: 'password',
+      label: 'New Password',
+      type: 'password',
+      placeholder: 'Enter new password (leave blank to keep current)',
+      required: false,
+      validation: {
+        minLength: 8,
+        custom: (value: string) => {
+          if (!value) return null // Allow empty password for edit mode
+          if (!/[A-Z]/.test(value)) return 'Password must contain at least 1 uppercase letter'
+          if (!/[0-9]/.test(value)) return 'Password must contain at least 1 number'
+          return null
+        }
+      }
+    },
+    {
+      name: 'confirmPassword',
+      label: 'Confirm New Password',
+      type: 'password',
+      placeholder: 'Confirm new password',
+      required: false,
+      validation: {
+        custom: (value: string, formData?: Record<string, any>) => {
+          const password = formData?.password
+          if (!password && !value) return null // Both empty is OK
+          if (password && !value) return 'Please confirm your password'
+          if (!password && value) return 'Please enter a password first'
+          if (password !== value) return 'Passwords do not match'
+          return null
+        }
+      }
+    },
+    {
       name: 'isSuper',
       label: 'Super Admin',
       type: 'checkbox',

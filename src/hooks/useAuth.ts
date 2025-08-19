@@ -142,6 +142,19 @@ export function useAdmins() {
     }
   }, [fetchAdmins])
 
+  const updateAdmin = useCallback(async (adminId: string, adminData: Partial<CreateAdminData>) => {
+    try {
+      await api.updateAdmin(adminId, adminData)
+      await fetchAdmins() // Refresh the list after update
+      return { success: true }
+    } catch (err) {
+      return { 
+        success: false, 
+        error: err instanceof Error ? err.message : 'Failed to update admin' 
+      }
+    }
+  }, [fetchAdmins])
+
   const deleteAdmin = useCallback(async (adminId: string) => {
     try {
       await api.deleteAdmin(adminId)
@@ -164,6 +177,7 @@ export function useAdmins() {
     loading,
     error,
     createAdmin,
+    updateAdmin,
     deleteAdmin,
     refreshAdmins: fetchAdmins
   }
