@@ -3,13 +3,16 @@
 import { useState } from 'react'
 import { useAuth, useAdmins } from '@/hooks'
 import GenericForm from '@/components/forms/GenericForm'
-import { adminFormConfig } from '@/components/forms/form-configs'
+import { adminFormConfig, adminEditFormConfig } from '@/components/forms/form-configs'
 import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal'
+import { EditIcon, DeleteIcon } from '@/components/Icons'
 
 export default function AdminsTab() {
   const { user } = useAuth()
   const { admins, createAdmin, deleteAdmin } = useAdmins()
   const [isLoading, setIsLoading] = useState(false)
+  const [editingAdmin, setEditingAdmin] = useState<any | null>(null)
+  const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean
     adminId?: string
@@ -17,28 +20,46 @@ export default function AdminsTab() {
   }>({ isOpen: false })
 
   const handleAdminSubmit = async (formData: Record<string, any>) => {
-    // Validate password confirmation
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match')
-      return
-    }
+    if (formMode === 'create') {
+      // Validate password confirmation for new admins
+      if (formData.password !== formData.confirmPassword) {
+        alert('Passwords do not match')
+        return
+      }
 
-    setIsLoading(true)
-    
-    const result = await createAdmin({
-      name: formData.adminName,
-      email: formData.email,
-      password: formData.password,
-      isSuperAdmin: formData.isSuper
-    })
+      setIsLoading(true)
+      
+      const result = await createAdmin({
+        name: formData.adminName,
+        email: formData.email,
+        password: formData.password,
+        isSuperAdmin: formData.isSuper
+      })
 
-    if (result.success) {
-      alert('Admin created successfully!')
-    } else {
-      alert(`Error creating admin: ${result.error}`)
+      if (result.success) {
+        alert('Admin created successfully!')
+        handleResetForm()
+      } else {
+        alert(`Error creating admin: ${result.error}`)
+      }
+      
+      setIsLoading(false)
+    } else if (formMode === 'edit') {
+      // Handle edit mode (you might need to implement updateAdmin in your hooks)
+      setIsLoading(true)
+      
+      try {
+        // Note: You'll need to implement updateAdmin function in your hooks/API
+        // For now, showing the pattern:
+        console.log('Updating admin:', editingAdmin?.adminId, formData)
+        alert('Edit functionality would update admin here')
+        handleResetForm()
+      } catch (error) {
+        alert(`Error updating admin: ${error}`)
+      }
+      
+      setIsLoading(false)
     }
-    
-    setIsLoading(false)
   }
 
   const handleDeleteClick = (adminId: string, adminName: string) => {
@@ -70,6 +91,20 @@ export default function AdminsTab() {
     setDeleteModal({ isOpen: false })
   }
 
+  const handleEditClick = (admin: any) => {
+    setEditingAdmin(admin)
+    setFormMode('edit')
+  }
+
+  const handleResetForm = () => {
+    setEditingAdmin(null)
+    setFormMode('create')
+  }
+
+  const handleCancelEdit = () => {
+    handleResetForm()
+  }
+
   if (!user?.isSuper) {
     return (
       <div className="text-center py-12 animate-fadeIn">
@@ -85,9 +120,15 @@ export default function AdminsTab() {
       {/* Left Side - Admin Form */}
       <div className="col-span-4">
         <GenericForm 
-          config={adminFormConfig}
+          config={formMode === 'edit' ? adminEditFormConfig : adminFormConfig}
           onSubmit={handleAdminSubmit}
+          onCancel={formMode === 'edit' ? handleCancelEdit : undefined}
           isLoading={isLoading}
+          initialData={editingAdmin ? {
+            adminName: editingAdmin.name || '',
+            email: editingAdmin.email || '',
+            isSuper: editingAdmin.isSuperAdmin || false
+          } : {}}
         />
       </div>
 
@@ -121,13 +162,19 @@ export default function AdminsTab() {
                   <td className="px-4 py-3 text-sm text-gray-900">{new Date(admin.createdAt).toLocaleDateString('pt-BR')}</td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex space-x-2">
-                      <button className="text-blue-600 hover:text-blue-900" title="Edit admin">✏️</button>
                       <button 
-                        className="text-red-600 hover:text-red-900" 
+                        onClick={() => handleEditClick(admin)}
+                        className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors" 
+                        title="Edit admin"
+                      >
+                        <EditIcon width={16} height={16} />
+                      </button>
+                      <button 
+                        className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors" 
                         title="Delete admin"
                         onClick={() => handleDeleteClick(admin.adminId, admin.name || admin.email)}
                       >
-                        🗑️
+                        <DeleteIcon width={16} height={16} />
                       </button>
                     </div>
                   </td>

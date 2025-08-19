@@ -1,6 +1,7 @@
 'use client'
 
 import { useBadges } from '@/hooks'
+import { EditIcon, DeleteIcon } from '@/components/Icons'
 
 export default function BadgesTab() {
   const { badges } = useBadges()
@@ -54,8 +55,12 @@ export default function BadgesTab() {
                 <td className="px-4 py-3 text-sm text-gray-900">{new Date(badge.createdAt).toLocaleDateString('pt-BR')}</td>
                 <td className="px-4 py-3 text-sm">
                   <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900">✏️</button>
-                    <button className="text-red-600 hover:text-red-900">🗑️</button>
+                    <button className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors">
+                      <EditIcon width={16} height={16} />
+                    </button>
+                    <button className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors">
+                      <DeleteIcon width={16} height={16} />
+                    </button>
                   </div>
                 </td>
               </tr>

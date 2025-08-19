@@ -24,6 +24,45 @@ export default function ImageUpload({
   const [isUploading, setIsUploading] = useState(false);
   const [fileInfo, setFileInfo] = useState<{ name: string; size: string } | null>(null);
 
+  const compressImage = (file: File, quality: number = 0.8): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        const MAX_WIDTH = 1024;
+        const MAX_HEIGHT = 1024;
+        
+        let { width, height } = img;
+        
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height = (height * MAX_WIDTH) / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width = (width * MAX_HEIGHT) / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(compressedDataUrl);
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
     setError(null);
 
@@ -58,33 +97,21 @@ export default function ImageUpload({
         size: formatFileSize(file.size)
       });
 
-      const reader = new FileReader();
-      
-      // Real progress tracking
-      reader.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const percentLoaded = Math.round((e.loaded / e.total) * 100);
-          setUploadProgress(percentLoaded);
-        }
-      };
-      
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setUploadProgress(100);
-        setTimeout(() => {
-          onChange(result);
+      // Compress image before encoding
+      compressImage(file)
+        .then((compressedDataUrl) => {
+          setUploadProgress(100);
+          setTimeout(() => {
+            onChange(compressedDataUrl);
+            setIsUploading(false);
+          }, 300);
+        })
+        .catch(() => {
+          setError('Failed to process image');
           setIsUploading(false);
-        }, 300);
-      };
-      
-      reader.onerror = () => {
-        setError('Failed to read file');
-        setIsUploading(false);
-        setFileInfo(null);
-        setUploadProgress(0);
-      };
-      
-      reader.readAsDataURL(file);
+          setFileInfo(null);
+          setUploadProgress(0);
+        });
     }
   }, [onChange]);
 
@@ -142,61 +169,72 @@ export default function ImageUpload({
 
 {value ? (
           <div className="p-4">
-            {fileInfo && (
-              <div className="flex items-center justify-between p-3 bg-[#f8f9fa] rounded-lg border border-[#e9ecef]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-[#e3f2fd] rounded-lg flex items-center justify-center">
+            {/* Show preview for both uploaded files and existing URLs */}
+            <div className="flex items-center justify-between p-3 bg-[#f8f9fa] rounded-lg border border-[#e9ecef]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#e3f2fd] rounded-lg flex items-center justify-center overflow-hidden">
+                  {value.startsWith('http') ? (
+                    <img 
+                      src={value} 
+                      alt="Current image" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
                     <UploadIcon width={20} height={20} color="#1976d2" />
-                  </div>
-                  <div className="flex-1">
-                    <p className={cn(
-                      "text-[#212529] text-[14px] font-medium truncate max-w-[200px]",
-                      Campton.className
-                    )}>
-                      {fileInfo.name}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={cn(
-                        "text-[#6c757d] text-[12px]",
-                        Campton.className
-                      )}>
-                        {fileInfo.size}
-                      </span>
-                      <span className="text-[#6c757d]">•</span>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-[#28a745] rounded-full"></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className={cn(
+                    "text-[#212529] text-[14px] font-medium truncate max-w-[200px]",
+                    Campton.className
+                  )}>
+                    {fileInfo?.name || (value.startsWith('http') ? value.split('/').pop() || 'Uploaded Image' : 'Uploaded Image')}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    {fileInfo?.size && (
+                      <>
                         <span className={cn(
-                          "text-[#28a745] text-[12px] font-medium",
+                          "text-[#6c757d] text-[12px]",
                           Campton.className
                         )}>
-                          Completed
+                          {fileInfo.size}
                         </span>
-                      </div>
+                        <span className="text-[#6c757d]">•</span>
+                      </>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-[#28a745] rounded-full"></div>
+                      <span className={cn(
+                        "text-[#28a745] text-[12px] font-medium",
+                        Campton.className
+                      )}>
+                        {value.startsWith('http') ? 'Loaded' : 'Completed'}
+                      </span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={handleChangeClick}
-                    className="p-1.5 text-[#6c757d] hover:text-[#020202] hover:bg-[#e9ecef] rounded transition-colors"
-                    disabled={disabled || isUploading}
-                    title="Change file"
-                  >
-                    <EditIcon />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleRemove}
-                    className="p-1.5 text-[#6c757d] hover:text-[#dc3545] hover:bg-[#f8d7da] rounded transition-colors"
-                    disabled={disabled || isUploading}
-                    title="Remove file"
-                  >
-                    <DeleteIcon />
-                  </button>
-                </div>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleChangeClick}
+                  className="p-1.5 text-[#6c757d] hover:text-[#020202] hover:bg-[#e9ecef] rounded transition-colors"
+                  disabled={disabled || isUploading}
+                  title="Change file"
+                >
+                  <EditIcon />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  className="p-1.5 text-[#6c757d] hover:text-[#dc3545] hover:bg-[#f8d7da] rounded transition-colors"
+                  disabled={disabled || isUploading}
+                  title="Remove file"
+                >
+                  <DeleteIcon />
+                </button>
+              </div>
+            </div>
           </div>
 ) : isUploading ? (
           <div className="p-4">

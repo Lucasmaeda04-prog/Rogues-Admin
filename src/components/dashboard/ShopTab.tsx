@@ -1,15 +1,19 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useShopItems } from '@/hooks'
 import { api } from '@/lib/api'
 import { CreateShopItemData } from '@/types'
 import CreateShopItemModal, { ShopItemFormData } from '@/components/modals/CreateShopItemModal'
+import { EditIcon, DeleteIcon } from '@/components/Icons'
 
 export default function ShopTab() {
   const { items } = useShopItems()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [editingItem, setEditingItem] = useState<ShopItemFormData | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
 
   const handleCreateItem = async (data: ShopItemFormData) => {
     setIsLoading(true)
@@ -33,7 +37,7 @@ export default function ShopTab() {
       
       console.log('Shop item created successfully:', response)
       
-      setIsModalOpen(false)
+      handleCloseModal()
       
       // Optionally, you could refresh the items list here
       // window.location.reload() or call a refresh function
@@ -45,6 +49,34 @@ export default function ShopTab() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleEditItem = (item: any) => {
+    const editData: ShopItemFormData = {
+      name: item.name,
+      description: item.description || '',
+      price: item.price,
+      quantity: item.quantity,
+      tag: item.tag || '',
+      category: item.categoryName || '',
+      image: item.image || ''
+    }
+    
+    setEditingItem(editData)
+    setModalMode('edit')
+    setIsModalOpen(true)
+  }
+
+  const handleOpenCreateModal = () => {
+    setEditingItem(null)
+    setModalMode('create')
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingItem(null)
+    setModalMode('create')
   }
 
   return (
@@ -62,7 +94,7 @@ export default function ShopTab() {
           </div>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={handleOpenCreateModal}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         >
           + Create Item
@@ -88,8 +120,18 @@ export default function ShopTab() {
               <tr key={item.shopItemId} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
                 <td className="px-4 py-3 text-sm">
-                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                    {item.image || '📦'}
+                  <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                    {item.image ? (
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={48}
+                        height={48}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-gray-400 text-xs">📦</span>
+                    )}
                   </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">{item.name}</td>
@@ -99,8 +141,15 @@ export default function ShopTab() {
                 <td className="px-4 py-3 text-sm text-gray-900">{new Date(item.createdAt).toLocaleDateString('pt-BR')}</td>
                 <td className="px-4 py-3 text-sm">
                   <div className="flex space-x-2">
-                    <button className="text-blue-600 hover:text-blue-900">✏️</button>
-                    <button className="text-red-600 hover:text-red-900">🗑️</button>
+                    <button 
+                      onClick={() => handleEditItem(item)}
+                      className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
+                    >
+                      <EditIcon width={16} height={16} />
+                    </button>
+                    <button className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors">
+                      <DeleteIcon width={16} height={16} />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -111,9 +160,11 @@ export default function ShopTab() {
 
       <CreateShopItemModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
         onSubmit={handleCreateItem}
         isLoading={isLoading}
+        editData={editingItem}
+        mode={modalMode}
       />
     </div>
   )

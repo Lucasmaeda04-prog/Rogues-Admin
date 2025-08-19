@@ -1,8 +1,8 @@
 import { FormConfig } from './GenericForm'
 
 export const adminFormConfig: FormConfig = {
-  title: 'Save Admin',
-  submitLabel: 'Save',
+  title: 'Create Admin',
+  submitLabel: 'Create Admin',
   fields: [
     {
       name: 'adminName',
@@ -51,6 +51,40 @@ export const adminFormConfig: FormConfig = {
           // Note: This would need to be enhanced to access other field values
           return null
         }
+      }
+    },
+    {
+      name: 'isSuper',
+      label: 'Super Admin',
+      type: 'checkbox',
+      description: 'Super admins have full access to all admin functions'
+    }
+  ]
+}
+
+export const adminEditFormConfig: FormConfig = {
+  title: 'Edit Admin',
+  submitLabel: 'Update Admin',
+  fields: [
+    {
+      name: 'adminName',
+      label: 'Admin Name',
+      type: 'text',
+      placeholder: 'Enter admin name',
+      required: true,
+      validation: {
+        minLength: 2,
+        maxLength: 50
+      }
+    },
+    {
+      name: 'email',
+      label: 'Email',
+      type: 'email',
+      placeholder: 'Enter admin email',
+      required: true,
+      validation: {
+        pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       }
     },
     {

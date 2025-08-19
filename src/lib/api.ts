@@ -128,6 +128,68 @@ export class ApiClient {
   }
 
   async createShopItem(data: CreateShopItemData): Promise<{ message: string; shopItem: ShopItem }> {
+    // If there's an image file, use FormData instead of JSON
+    if (data.image && data.image.startsWith('data:')) {
+      const formData = new FormData();
+      
+      // Convert base64 to blob
+      const imageResponse = await fetch(data.image);
+      const blob = await imageResponse.blob();
+      
+      formData.append('image', blob, 'image.jpg');
+      formData.append('name', data.name);
+      formData.append('description', data.description || '');
+      formData.append('price', data.price.toString());
+      formData.append('tag', data.tag);
+      formData.append('categoryId', data.categoryId.toString());
+      formData.append('available', (data.available ?? true).toString());
+      formData.append('quantity', (data.quantity ?? 0).toString());
+
+      const url = `${this.baseUrl}/shop/item`
+      const config = {
+        method: 'POST',
+        headers: {
+          ...this.getAuthHeaders(),
+        },
+        body: formData,
+      }
+
+      console.log('API Request (FormData):', {
+        url,
+        method: 'POST',
+        headers: { 
+          ...config.headers, 
+          Authorization: 'Authorization' in (config.headers || {}) ? '[PRESENT]' : '[MISSING]' 
+        }
+      })
+
+      const apiResponse = await fetch(url, config)
+
+      console.log('API Response:', {
+        status: apiResponse.status,
+        statusText: apiResponse.statusText,
+        headers: Object.fromEntries(apiResponse.headers.entries())
+      })
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text()
+        console.error('API Error Response:', errorText)
+        
+        let errorMessage = `HTTP error! status: ${apiResponse.status}`
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.message || errorMessage
+        } catch (e) {
+          errorMessage = errorText || errorMessage
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      return apiResponse.json()
+    }
+    
+    // Fallback to JSON for items without images
     return this.request<{ message: string; shopItem: ShopItem }>('/shop/item', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -211,7 +273,7 @@ export class ApiClient {
   }
 
   async deleteAdmin(adminId: string): Promise<{ message: string }> {
-    return this.request<{ message: string }>(`/auth/admin/${adminId}`, {
+    return this.request<{ message: string }>(`/auth/${adminId}`, {
       method: 'DELETE',
     })
   }

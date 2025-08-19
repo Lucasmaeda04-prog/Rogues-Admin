@@ -11,6 +11,8 @@ interface CreateShopItemModalProps {
   onClose: () => void;
   onSubmit: (data: ShopItemFormData) => void;
   isLoading?: boolean;
+  editData?: ShopItemFormData | null;
+  mode?: 'create' | 'edit';
 }
 
 export interface ShopItemFormData {
@@ -27,7 +29,9 @@ export default function CreateShopItemModal({
   isOpen, 
   onClose, 
   onSubmit, 
-  isLoading = false 
+  isLoading = false,
+  editData = null,
+  mode = 'create'
 }: CreateShopItemModalProps) {
   const [formData, setFormData] = useState<ShopItemFormData>({
     name: '',
@@ -40,6 +44,23 @@ export default function CreateShopItemModal({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Update form data when editData changes
+  useEffect(() => {
+    if (editData && mode === 'edit') {
+      setFormData(editData);
+    } else if (mode === 'create') {
+      setFormData({
+        name: '',
+        description: '',
+        price: 0,
+        quantity: 0,
+        tag: '',
+        category: '',
+        image: ''
+      });
+    }
+  }, [editData, mode]);
 
   useEffect(() => {
     if (isOpen) {
@@ -141,7 +162,7 @@ export default function CreateShopItemModal({
                 "text-[#020202] text-[28px] font-semibold mb-2",
                 Campton.className
               )}>
-                Create Item Shop
+                {mode === 'edit' ? 'Edit Item Shop' : 'Create Item Shop'}
               </h2>
               <p className={cn(
                 "text-[#949191] text-[14px] font-light",
@@ -348,7 +369,7 @@ export default function CreateShopItemModal({
                     Campton.className
                   )}
                 >
-                  {isLoading ? 'Saving...' : 'Save'}
+                  {isLoading ? 'Saving...' : (mode === 'edit' ? 'Update' : 'Save')}
                 </button>
               </div>
             </form>
