@@ -376,15 +376,20 @@ export default function CreateShopItemModal({
           </div>
 
           {/* Right Side - Preview */}
-          <div className="w-full lg:w-[600px] lg:min-w-[500px] bg-black lg:rounded-r-[22px] rounded-b-[22px] lg:rounded-b-none p-[35px] flex flex-col items-center justify-center gap-8">
-            <h3 className={cn(
-              "text-[#d7d7d7] text-[24px] font-medium w-full",
-              Campton.className
-            )}>
-              Item Preview
-            </h3>
+          <div className="w-full lg:w-[600px] lg:min-w-[500px] bg-white lg:rounded-r-[22px] rounded-b-[22px] lg:rounded-b-none pl-[20px] flex flex-col">
+            <div className="w-full h-full bg-black lg:rounded-l-[16px] rounded-b-[22px] lg:rounded-b-none p-[35px] flex flex-col">
+              <div className="mb-6">
+                <h3 className={cn(
+                  "text-[#d7d7d7] text-[28px] w-full mb-2",
+                  Campton.className
+                )}>
+                  Item Preview
+                </h3>
+              </div>
+              
+              <div className="flex-1 flex items-center justify-center">
             
-            <div className="w-64">
+            <div className="w-80">
               <ShopCard
                 title={formData.name || 'Item Name'}
                 description={formData.description || 'Item description will appear here'}
@@ -396,6 +401,8 @@ export default function CreateShopItemModal({
                 onPurchase={() => {}}
                 className="w-full"
               />
+              </div>
+              </div>
             </div>
           </div>
         </div>
