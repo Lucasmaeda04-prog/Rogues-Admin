@@ -6,14 +6,7 @@ import type { Task, CreateTaskData } from '@/types'
 export function useTasks() {
   const { data: tasksResponse, loading, error, refetch } = useApi(() => api.getTasks())
 
-  const createTask = useCallback(async (taskData: {
-    name: string
-    description?: string
-    points: number
-    type: Task['type']
-    isDaily: boolean
-    deadline?: Date
-  }) => {
+  const createTask = useCallback(async (taskData: CreateTaskData) => {
     try {
       await api.createTask(taskData)
       await refetch()
@@ -26,14 +19,7 @@ export function useTasks() {
     }
   }, [refetch])
 
-  const updateTask = useCallback(async (id: string, taskData: {
-    name?: string
-    description?: string
-    points?: number
-    type?: Task['type']
-    isDaily?: boolean
-    deadline?: Date
-  }) => {
+  const updateTask = useCallback(async (id: string, taskData: Partial<CreateTaskData>) => {
     try {
       await api.updateTask(id, taskData)
       await refetch()

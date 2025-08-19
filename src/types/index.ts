@@ -37,6 +37,8 @@ export interface RegisterResponse {
 // TASK TYPES  
 // =============================================================================
 
+export type TaskType = 'TWITTER_LIKE' | 'TWITTER_COMMENT' | 'TWITTER_RETWEET' | 'TWITTER_PFP' | 'DISCORD_TOWNHALL_PRESENCE'
+
 export interface Task {
   taskId: string
   name: string
@@ -44,22 +46,23 @@ export interface Task {
   link: string | null
   points: number
   deadline: string
-  type: string
+  type: TaskType
   adminId: string
   createdAt: string
   updatedAt: string
   isDaily: boolean
-  admin: {
+  // Additional fields from API joins/calculations
+  admin?: {
     name: string | null
     email: string
   }
-  _count: {
+  _count?: {
     taskCompletions: number
   }
 }
 
 export interface TaskTypesResponse {
-  types: Array<'TWITTER_LIKE' | 'TWITTER_COMMENT' | 'TWITTER_RETWEET' | 'TWITTER_PFP' | 'DISCORD_TOWNHALL_PRESENCE'>
+  types: Array<TaskType>
 }
 
 export interface TasksResponse {
@@ -177,7 +180,7 @@ export interface CreateTaskData {
   link?: string
   points?: number
   deadline: string
-  type: 'TWITTER_LIKE' | 'TWITTER_COMMENT' | 'TWITTER_RETWEET' | 'TWITTER_PFP' | 'DISCORD_TOWNHALL_PRESENCE'
+  type: TaskType
   isDaily?: boolean
 }
 

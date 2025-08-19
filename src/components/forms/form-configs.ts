@@ -155,17 +155,16 @@ export const taskFormConfig: FormConfig = {
     },
     {
       name: 'type',
-      label: 'Social Media Type',
+      label: 'Task Type',
       type: 'select',
-      placeholder: 'Select social media type',
+      placeholder: 'Select task type',
       required: true,
       options: [
-        { value: 'instagram', label: 'Instagram' },
-        { value: 'twitter', label: 'Twitter' },
-        { value: 'facebook', label: 'Facebook' },
-        { value: 'linkedin', label: 'LinkedIn' },
-        { value: 'youtube', label: 'YouTube' },
-        { value: 'tiktok', label: 'TikTok' }
+        { value: 'TWITTER_LIKE', label: 'X (Twitter) - Like' },
+        { value: 'TWITTER_COMMENT', label: 'X (Twitter) - Comment' },
+        { value: 'TWITTER_RETWEET', label: 'X (Twitter) - Retweet' },
+        { value: 'TWITTER_PFP', label: 'X (Twitter) - Profile Picture' },
+        { value: 'DISCORD_TOWNHALL_PRESENCE', label: 'Discord - Townhall Presence' }
       ]
     },
     {
@@ -176,7 +175,7 @@ export const taskFormConfig: FormConfig = {
       required: true,
       validation: {
         custom: (value: number) => {
-          if (value < 1) return 'Points must be at least 1'
+          if (value < 0) return 'Points cannot be negative'
           if (value > 1000) return 'Points cannot exceed 1000'
           return null
         }
@@ -194,8 +193,8 @@ export const taskFormConfig: FormConfig = {
     {
       name: 'deadline',
       label: 'Deadline',
-      type: 'text', // Could be enhanced to date type
-      placeholder: 'YYYY-MM-DD',
+      type: 'datetime-local',
+      placeholder: '',
       required: true
     },
     {
