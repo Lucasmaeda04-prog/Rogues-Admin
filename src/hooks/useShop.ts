@@ -29,7 +29,7 @@ export function useShopItems() {
     name?: string
     description?: string
     price?: number
-    categoryId?: number
+    categoryId?: number 
     imageUrl?: string
   }) => {
     try {

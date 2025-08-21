@@ -64,3 +64,29 @@ export function getTaskSocialInfo(taskType: TaskType) {
     displayName: network === 'twitter' ? 'X' : network.charAt(0).toUpperCase() + network.slice(1)
   }
 }
+
+export function formatDeadline(deadline: string | Date): string {
+  const date = typeof deadline === 'string' ? new Date(deadline) : deadline;
+  
+  if (isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+  
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear().toString().slice(-2);
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  
+  return `${day}/${month}/${year} - ${hours}:${minutes}`;
+}
+
+/**
+ * Checks if a deadline has passed
+ * @param deadline - Date string or Date object
+ * @returns true if deadline has passed
+ */
+export function isDeadlinePassed(deadline: string | Date): boolean {
+  const date = typeof deadline === 'string' ? new Date(deadline) : deadline;
+  return date.getTime() < Date.now();
+}

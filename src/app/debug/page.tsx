@@ -1,10 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import CreateTaskModal, { TaskFormData } from '@/components/modals/CreateTaskModal'
 
 export default function DebugPage() {
   const [result, setResult] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false)
+
+  const handleTaskSubmit = (data: TaskFormData) => {
+    console.log('Task submitted:', data)
+    setResult(`Task created: ${JSON.stringify(data, null, 2)}`)
+    setIsTaskModalOpen(false)
+  }
 
   const testEndpoint = async (endpoint: string, method = 'GET', body?: any) => {
     setLoading(true)
@@ -70,6 +78,13 @@ Body: ${text}
         </button>
         
         <button
+          onClick={() => setIsTaskModalOpen(true)}
+          className="px-4 py-2 bg-purple-500 text-white rounded mr-4"
+        >
+          Test Create Task Modal
+        </button>
+        
+        <button
           onClick={() => testEndpoint('/auth/admins')}
           className="px-4 py-2 bg-red-500 text-white rounded mr-4"
           disabled={loading}
@@ -112,6 +127,15 @@ Body: ${text}
       <pre className="bg-gray-100 p-4 rounded overflow-x-auto text-sm">
         {result}
       </pre>
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        onSubmit={handleTaskSubmit}
+        isLoading={false}
+        mode="create"
+      />
     </div>
   )
 }

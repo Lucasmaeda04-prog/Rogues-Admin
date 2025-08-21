@@ -1,4 +1,28 @@
 import { FormConfig } from './GenericForm'
+import { isValidBrazilianDate } from '@/lib/dateUtils'
+import { TaskType } from '@/types'
+
+// Helper function to format task type labels
+function formatTaskTypeLabel(type: string): string {
+  // Handle specific mappings for better readability
+  const mappings: Record<string, string> = {
+    'TWITTER_LIKE': 'Twitter Like',
+    'TWITTER_COMMENT': 'Twitter Comment',
+    'TWITTER_RETWEET': 'Twitter Retweet',
+    'TWITTER_PFP': 'Twitter Profile Picture',
+    'DISCORD_TOWNHALL_PRESENCE': 'Discord Townhall Presence',
+    'CONNECT_DISCORD': 'Connect Discord',
+    'CONNECT_X': 'Connect X (Twitter)',
+  }
+
+  // Return custom mapping if exists, otherwise format automatically
+  if (mappings[type]) {
+    return mappings[type]
+  }
+
+  // Fallback: format automatically
+  return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
+}
 
 export const adminFormConfig: FormConfig = {
   title: 'Create Admin',
@@ -47,7 +71,7 @@ export const adminFormConfig: FormConfig = {
       placeholder: 'Confirm Password',
       required: true,
       validation: {
-        custom: (value: string, formData?: Record<string, any>) => {
+        custom: (_value: string, _formData?: Record<string, any>) => {
           // Note: This would need to be enhanced to access other field values
           return null
         }
@@ -129,18 +153,20 @@ export const adminEditFormConfig: FormConfig = {
   ]
 }
 
-export const taskFormConfig: FormConfig = {
-  title: 'Create Task',
-  submitLabel: 'Create Task',
+export function createTaskFormConfig(taskTypes: string[] = []): FormConfig {
+  return {
+    title: 'Create Task',
+    submitLabel: 'Save',
+    cancelLabel: 'Cancel',
   fields: [
     {
-      name: 'name',
+      name: 'title',
       label: 'Task Name',
       type: 'text',
-      placeholder: 'Enter task name',
+      placeholder: 'Enter your name',
       required: true,
       validation: {
-        minLength: 3,
+        minLength: 2,
         maxLength: 100
       }
     },
@@ -148,36 +174,68 @@ export const taskFormConfig: FormConfig = {
       name: 'description',
       label: 'Description',
       type: 'textarea',
-      placeholder: 'Enter task description',
+      placeholder: 'Log in with Discord. Click at your profile and connect your profile with discord   name',
+      required: true,
       validation: {
+        minLength: 10,
         maxLength: 500
       }
     },
     {
-      name: 'type',
-      label: 'Task Type',
-      type: 'select',
-      placeholder: 'Select task type',
-      required: true,
-      options: [
-        { value: 'TWITTER_LIKE', label: 'X (Twitter) - Like' },
-        { value: 'TWITTER_COMMENT', label: 'X (Twitter) - Comment' },
-        { value: 'TWITTER_RETWEET', label: 'X (Twitter) - Retweet' },
-        { value: 'TWITTER_PFP', label: 'X (Twitter) - Profile Picture' },
-        { value: 'DISCORD_TOWNHALL_PRESENCE', label: 'Discord - Townhall Presence' }
-      ]
+      name: 'verificationSteps',
+      label: 'Steps',
+      type: 'textarea',
+      placeholder: 'Complete the following steps to redeem 40+ Credits:\n\n• Connect to your Matrica profile\n• Click at your profile and connect your profile with discord\n• Come back to this page and click at the check button',
+      validation: {
+        maxLength: 1000
+      }
     },
     {
-      name: 'points',
-      label: 'Reward Points',
+      name: 'rewards',
+      label: 'Price',
       type: 'number',
-      placeholder: 'Enter reward points',
+      placeholder: 'Put a number > 0',
       required: true,
       validation: {
         custom: (value: number) => {
-          if (value < 0) return 'Points cannot be negative'
-          if (value > 1000) return 'Points cannot exceed 1000'
+          if (value <= 0) return 'Price must be greater than 0'
           return null
+        }
+      }
+    },
+    {
+      name: 'taskType',
+      label: 'Task Type',
+      type: 'radio',
+      required: true,
+      options: [
+        { value: 'daily', label: 'Daily Task - Can be completed every day' },
+        { value: 'one-time', label: 'One-time Task - Has a specific deadline' }
+      ],
+      description: 'Choose whether this task repeats daily or has a deadline'
+    },
+    {
+      name: 'deadline',
+      label: 'Deadline',
+      type: 'text',
+      placeholder: '23/02/2024 - 18:00',
+      description: 'Format: DD/MM/YYYY - HH:MM (required for one-time tasks)',
+      conditionalDisabled: (formData: Record<string, any>) => formData?.taskType === 'daily',
+      validation: {
+        custom: (value: string, formData?: Record<string, any>) => {
+          // Se for one-time task, deadline é obrigatório
+          if (formData?.taskType === 'one-time' && (!value || value.trim() === '')) {
+            return 'Deadline is required for one-time tasks';
+          }
+          
+          // Se tem valor, validar formato
+          if (value && value.trim() !== '') {
+            if (!isValidBrazilianDate(value)) {
+              return 'Invalid date format. Use DD/MM/YYYY - HH:MM';
+            }
+          }
+          
+          return null;
         }
       }
     },
@@ -185,26 +243,37 @@ export const taskFormConfig: FormConfig = {
       name: 'link',
       label: 'Task Link',
       type: 'text',
-      placeholder: 'Enter task URL (optional)',
-      validation: {
-        pattern: /^https?:\/\/.+/
-      }
+      placeholder: 'https://discord.gg/example',
+      description: 'Optional: Link where users can complete the task'
     },
     {
-      name: 'deadline',
-      label: 'Deadline',
-      type: 'datetime-local',
-      placeholder: '',
-      required: true
+      name: 'type',
+      label: 'Task Type',
+      type: 'select',
+      required: true,
+      placeholder: 'Select task type...',
+      description: 'Choose the specific type of task from available options',
+      options: taskTypes.map(type => ({
+        value: type,
+        label: formatTaskTypeLabel(type)
+      }))
     },
     {
-      name: 'isDaily',
-      label: 'Daily Task',
-      type: 'checkbox',
-      description: 'Task can be completed daily'
+      name: 'socialMedia',
+      label: 'Social media',
+      type: 'radio',
+      required: true,
+      options: [
+        { value: 'discord', label: 'Discord' },
+        { value: 'X', label: 'X (late twitter)' }
+      ]
     }
   ]
+  }
 }
+
+// Static version for compatibility
+export const taskFormConfig: FormConfig = createTaskFormConfig()
 
 export const shopItemFormConfig: FormConfig = {
   title: 'Create Shop Item',

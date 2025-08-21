@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Campton } from '@/lib/fonts';
 import { cn } from '@/lib/cn';
-import ShopCard from '@/components/shopCard';
+import ShopCard from '@/components/Previews/shopCard';
 import ImageUpload from '@/components/ui/ImageUpload';
 
 interface CreateShopItemModalProps {
@@ -319,7 +319,6 @@ export default function CreateShopItemModal({
                       type="text"
                       value={formData.category}
                       onChange={(e) => handleChange('category', e.target.value)}
-                      placeholder="Enter category"
                       className={cn(
                         "w-full px-3.5 py-2 bg-[#f9f9f9] rounded-[10px] border-[1.3px] border-[#efefef] text-[14px] font-light placeholder:text-[#949191] focus:outline-none focus:border-[#020202]",
                         Campton.className,

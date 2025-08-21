@@ -1,12 +1,61 @@
 'use client'
 
+import { useState } from 'react'
 import Image from 'next/image'
-import { useTasks } from '@/hooks'
+import { useTasks, useTaskTypes } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
 import { getTaskSocialInfo } from '@/lib/taskUtils'
+import CreateTaskModal, { TaskFormData } from '@/components/modals/CreateTaskModal'
+import { convertToTimestamp } from '@/lib/dateUtils'
 
 export default function TasksTab() {
-  const { tasks } = useTasks()
+  const { tasks, createTask } = useTasks()
+  const { taskTypes } = useTaskTypes()
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleCreateTask = async (data: TaskFormData) => {
+    console.log('Creating task with form data:', data)
+    setIsLoading(true)
+    
+    try {
+      console.log('Creating task with form data:', data)
+      console.log('Available task types:', taskTypes)
+      console.log('Selected task type from form:', data.type)
+      
+      // Usar o tipo selecionado diretamente do formulário
+      const taskType = data.type || 'DISCORD_TOWNHALL_PRESENCE' // fallback
+      
+      // Criar a task via hook (que já faz refetch automático)
+      const createTaskData = {
+        name: data.title,
+        description: data.description,
+        points: data.rewards,
+        deadline: data.taskType === 'daily' 
+          ? new Date().toISOString().slice(0, 19).replace('T', ' ') 
+          : convertToTimestamp(data.deadline || ''), // Converter deadline brasileiro para formato MySQL
+        type: taskType as any,
+        isDaily: data.taskType === 'daily', // Converter taskType para boolean
+        link: data.link || '', // Link opcional da task
+      }
+
+      console.log('Sending to API:', createTaskData)
+      const result = await createTask(createTaskData)
+      
+      if (result.success) {
+        console.log('Task created successfully')
+        setIsCreateModalOpen(false)
+      } else {
+        console.error('Error creating task:', result.error)
+        alert(`Erro ao criar task: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error)
+      alert('Erro inesperado ao criar task')
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="animate-fadeIn">
@@ -22,7 +71,10 @@ export default function TasksTab() {
             </select>
           </div>
         </div>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+        <button 
+          onClick={() => setIsCreateModalOpen(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        >
           + Create Task
         </button>
       </div>
@@ -94,6 +146,15 @@ export default function TasksTab() {
           </tbody>
         </table>
       </div>
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateTask}
+        isLoading={isLoading}
+        mode="create"
+      />
     </div>
   )
 }

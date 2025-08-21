@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Button } from '../Button';
+import { Button } from '../../Button';
 import { cn } from '@/lib/cn';
 import { Campton } from '@/lib/fonts';
 

@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import CustomSelect from './CustomSelect'
 
 export interface FormField {
   name: string
   label: string
-  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'checkbox' | 'select'
+  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'checkbox' | 'select' | 'radio'
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -14,9 +15,10 @@ export interface FormField {
     minLength?: number
     maxLength?: number
     pattern?: RegExp
-    custom?: (value: any) => string | null // Returns error message or null
+    custom?: (value: any, formData?: Record<string, any>) => string | null // Returns error message or null
   }
   description?: string
+  conditionalDisabled?: (formData: Record<string, any>) => boolean // Conditionally disable field
 }
 
 export interface FormConfig {
@@ -31,18 +33,24 @@ interface GenericFormProps {
   config: FormConfig
   onSubmit: (data: Record<string, any>) => void
   onCancel?: () => void
+  onChange?: (data: Record<string, any>) => void
   isLoading?: boolean
   initialData?: Record<string, any>
   className?: string
+  hideTitle?: boolean
+  hideBorder?: boolean
 }
 
 export default function GenericForm({ 
   config, 
   onSubmit, 
-  onCancel, 
+  onCancel,
+  onChange, 
   isLoading = false, 
   initialData = {},
-  className = ""
+  className = "",
+  hideTitle = false,
+  hideBorder = false
 }: GenericFormProps) {
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -82,7 +90,7 @@ export default function GenericForm({
       }
       
       if (field.validation.custom) {
-        return field.validation.custom(value)
+        return field.validation.custom(value, formData)
       }
     }
 
@@ -90,7 +98,11 @@ export default function GenericForm({
   }
 
   const handleChange = (fieldName: string, value: any) => {
-    setFormData(prev => ({ ...prev, [fieldName]: value }))
+    const newFormData = { ...formData, [fieldName]: value }
+    setFormData(newFormData)
+    
+    // Call onChange callback with updated data
+    onChange?.(newFormData)
     
     // Clear error when user starts typing
     if (errors[fieldName]) {
@@ -133,12 +145,15 @@ export default function GenericForm({
   }
 
   const renderField = (field: FormField) => {
+    const isConditionallyDisabled = field.conditionalDisabled ? field.conditionalDisabled(formData) : false
+    const isFieldDisabled = isLoading || field.disabled || isConditionallyDisabled
+    
     const commonProps = {
       id: field.name,
-      disabled: isLoading || field.disabled,
+      disabled: isFieldDisabled,
       className: `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
         errors[field.name] ? 'border-red-300' : 'border-gray-300'
-      }`
+      } ${isConditionallyDisabled ? 'opacity-50 cursor-not-allowed' : ''}`
     }
 
     switch (field.type) {
@@ -156,19 +171,14 @@ export default function GenericForm({
 
       case 'select':
         return (
-          <select
-            {...commonProps}
+          <CustomSelect
             value={formData[field.name] || ''}
-            onChange={(e) => handleChange(field.name, e.target.value)}
-            required={field.required}
-          >
-            <option value="">{field.placeholder || `Select ${field.label}`}</option>
-            {field.options?.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onChange={(value) => handleChange(field.name, value)}
+            options={field.options || []}
+            placeholder={field.placeholder || `Select ${field.label}`}
+            disabled={isFieldDisabled}
+            error={!!errors[field.name]}
+          />
         )
 
       case 'checkbox':
@@ -188,6 +198,29 @@ export default function GenericForm({
           </div>
         )
 
+      case 'radio':
+        return (
+          <div className="space-y-2">
+            {field.options?.map(option => (
+              <div key={option.value} className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  id={`${field.name}-${option.value}`}
+                  name={field.name}
+                  value={option.value}
+                  checked={formData[field.name] === option.value}
+                  onChange={(e) => handleChange(field.name, e.target.value)}
+                  disabled={isLoading || field.disabled}
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor={`${field.name}-${option.value}`} className="text-sm font-medium text-gray-700">
+                  {option.label}
+                </label>
+              </div>
+            ))}
+          </div>
+        )
+
       default:
         return (
           <input
@@ -203,8 +236,10 @@ export default function GenericForm({
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow border p-6 ${className}`}>
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">{config.title}</h2>
+    <div className={`bg-white ${!hideBorder ? 'rounded-lg shadow border' : ''} p-6 ${className}`}>
+      {!hideTitle && (
+        <h2 className="text-lg font-semibold text-gray-900 mb-6">{config.title}</h2>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
         {config.fields.map(field => (
