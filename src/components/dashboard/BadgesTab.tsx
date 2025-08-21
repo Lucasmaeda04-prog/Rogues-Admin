@@ -2,6 +2,7 @@
 
 import { useBadges } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
+import Image from 'next/image'
 
 export default function BadgesTab() {
   const { badges } = useBadges()
@@ -44,9 +45,19 @@ export default function BadgesTab() {
               <tr key={badge.badgeId} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
                 <td className="px-4 py-3 text-sm">
-                  <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                    {badge.image || '🏆'}
-                  </div>
+                   <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+                        {badge.image ? (
+                          <Image
+                            src={badge.image}
+                            alt={badge.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs">🏆</span>
+                        )}
+                    </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">{badge.name}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{badge.description || 'N/A'}</td>
