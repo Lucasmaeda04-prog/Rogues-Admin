@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+import Image from 'next/image';
+import { useDropzone, FileRejection } from 'react-dropzone';
 import { Campton } from '@/lib/fonts';
 import { cn } from '@/lib/cn';
 import { EditIcon, DeleteIcon, CloseIcon, UploadIcon } from '@/components/Icons';
@@ -28,7 +29,7 @@ export default function ImageUpload({
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      const img = new Image();
+      const img = new window.Image();
 
       img.onload = () => {
         // Calculate new dimensions while maintaining aspect ratio
@@ -63,14 +64,14 @@ export default function ImageUpload({
     });
   };
 
-  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+  const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
     setError(null);
 
-    if (rejectedFiles.length > 0) {
-      const rejection = rejectedFiles[0];
-      if (rejection.errors.find((e: any) => e.code === 'file-too-large')) {
+    if (fileRejections.length > 0) {
+      const rejection = fileRejections[0];
+      if (rejection.errors.find((e) => e.code === 'file-too-large')) {
         setError('File size must be less than 5MB');
-      } else if (rejection.errors.find((e: any) => e.code === 'file-invalid-type')) {
+      } else if (rejection.errors.find((e) => e.code === 'file-invalid-type')) {
         setError('Please select a valid image file');
       } else {
         setError('Invalid file');
@@ -174,9 +175,11 @@ export default function ImageUpload({
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#e3f2fd] rounded-lg flex items-center justify-center overflow-hidden">
                   {value.startsWith('http') ? (
-                    <img 
+                    <Image 
                       src={value} 
                       alt="Current image" 
+                      width={40}
+                      height={40}
                       className="w-full h-full object-cover"
                     />
                   ) : (

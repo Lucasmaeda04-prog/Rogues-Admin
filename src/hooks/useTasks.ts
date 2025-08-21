@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { api } from '@/lib/api'
 import { useApi } from './useApi'
-import type { Task, CreateTaskData } from '@/types'
+import type { CreateTaskData } from '@/types'
 
 export function useTasks() {
   const { data: tasksResponse, loading, error, refetch } = useApi(() => api.getTasks())

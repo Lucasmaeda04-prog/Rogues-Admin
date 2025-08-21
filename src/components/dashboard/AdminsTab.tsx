@@ -11,7 +11,7 @@ export default function AdminsTab() {
   const { user } = useAuth()
   const { admins, createAdmin, updateAdmin, deleteAdmin } = useAdmins()
   const [isLoading, setIsLoading] = useState(false)
-  const [editingAdmin, setEditingAdmin] = useState<any | null>(null)
+  const [editingAdmin, setEditingAdmin] = useState<Record<string, unknown> | null>(null)
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
   const [deleteModal, setDeleteModal] = useState<{
     isOpen: boolean
@@ -19,7 +19,7 @@ export default function AdminsTab() {
     adminName?: string
   }>({ isOpen: false })
 
-  const handleAdminSubmit = async (formData: Record<string, any>) => {
+  const handleAdminSubmit = async (formData: Record<string, unknown>) => {
     if (formMode === 'create') {
       // Validate password confirmation for new admins
       if (formData.password !== formData.confirmPassword) {
@@ -30,10 +30,10 @@ export default function AdminsTab() {
       setIsLoading(true)
       
       const result = await createAdmin({
-        name: formData.adminName,
-        email: formData.email,
-        password: formData.password,
-        isSuperAdmin: formData.isSuper
+        name: formData.adminName as string,
+        email: formData.email as string,
+        password: formData.password as string,
+        isSuperAdmin: formData.isSuper as boolean
       })
 
       if (result.success) {
@@ -55,18 +55,18 @@ export default function AdminsTab() {
       
       try {
         // Prepare update data - only include password if it's being changed
-        const updateData: any = {
-          name: formData.adminName,
-          email: formData.email,
-          isSuperAdmin: formData.isSuper
+        const updateData: Record<string, unknown> = {
+          name: formData.adminName as string,
+          email: formData.email as string,
+          isSuperAdmin: formData.isSuper as boolean
         }
 
         // Only include password if it's being changed (not empty)
-        if (formData.password && formData.password.trim() !== '') {
-          updateData.password = formData.password
+        if (formData.password && (formData.password as string).trim() !== '') {
+          updateData.password = formData.password as string
         }
 
-        const result = await updateAdmin(editingAdmin?.adminId, updateData)
+        const result = await updateAdmin(editingAdmin?.adminId as string, updateData)
         
         if (result.success) {
           alert('Admin updated successfully!')
@@ -111,7 +111,7 @@ export default function AdminsTab() {
     setDeleteModal({ isOpen: false })
   }
 
-  const handleEditClick = (admin: any) => {
+  const handleEditClick = (admin: Record<string, unknown>) => {
     setEditingAdmin(admin)
     setFormMode('edit')
   }
@@ -183,7 +183,7 @@ export default function AdminsTab() {
                   <td className="px-4 py-3 text-sm">
                     <div className="flex space-x-2">
                       <button 
-                        onClick={() => handleEditClick(admin)}
+                        onClick={() => handleEditClick(admin as unknown as Record<string, unknown>)}
                         className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors" 
                         title="Edit admin"
                       >

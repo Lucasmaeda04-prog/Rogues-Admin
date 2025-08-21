@@ -30,7 +30,7 @@ export function useAuth() {
               name: parsedUser.name,
               isSuper: parsedUser.role === 'super_admin'
             })
-          } catch (parseError) {
+          } catch {
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             setUser(null)
@@ -50,7 +50,7 @@ export function useAuth() {
           throw apiError
         }
       }
-    } catch (err) {
+    } catch {
       // Token inválido, limpar localStorage
       localStorage.removeItem('token')
       localStorage.removeItem('user')
@@ -87,7 +87,7 @@ export function useAuth() {
   const logout = useCallback(async () => {
     try {
       await api.logout()
-    } catch (err) {
+    } catch {
       // Ignorar erros de logout da API
     } finally {
       localStorage.removeItem('token')

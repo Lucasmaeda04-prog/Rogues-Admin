@@ -12,6 +12,7 @@ interface UseApiReturn<T> extends UseApiState<T> {
 
 export function useApi<T>(
   apiCall: () => Promise<T>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   deps: any[] = []
 ): UseApiReturn<T> {
   const [state, setState] = useState<UseApiState<T>>({
@@ -32,7 +33,8 @@ export function useApi<T>(
         loading: false
       }))
     }
-  }, deps)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiCall, ...deps])
 
   useEffect(() => {
     fetchData()

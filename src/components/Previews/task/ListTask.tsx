@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/Button';
 import { IconConfirmed, IconDiscord, DailyTaskIcon, OneTimeTaskIcon, DeadlineIcon } from '@/components/Icons';
 import { Campton } from '@/lib/fonts';
@@ -142,9 +143,11 @@ const TaskList: React.FC<TaskProps> = ({
                   borderColor: '#515151'
                 }}
               >
-                <img 
-                  src="assets/mythic.png" 
+                <Image 
+                  src="/assets/mythic.png" 
                   alt="Carrot" 
+                  width={12}
+                  height={12}
                   className="w-3 h-3"
                 />
               </div>

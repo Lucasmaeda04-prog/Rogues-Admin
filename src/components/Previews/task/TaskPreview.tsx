@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/cn';
+import Image from 'next/image';
 import { Campton } from '@/lib/fonts';
 import { IconDiscord, IconX } from '@/components/Icons';
 import { formatDeadline } from '@/lib/taskUtils';
@@ -96,9 +97,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
           {/* Deadline */}
           {task.deadline && (
             <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: '#C8C8C8' }}>
-              <img 
+              <Image 
                 src="/assets/clock.svg" 
                 alt="Clock" 
+                width={12}
+                height={12}
                 className="w-3 h-3"
               />
               <span className={cn("text-black text-xs font-light", Campton.className)}>

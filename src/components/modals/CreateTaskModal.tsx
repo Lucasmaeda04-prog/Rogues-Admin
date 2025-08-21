@@ -110,34 +110,34 @@ export default function CreateTaskModal({
     }
   };
 
-  const handleFormChange = (data: Record<string, any>) => {
+  const handleFormChange = (data: Record<string, unknown>) => {
     const taskData: TaskFormData = {
-      title: data.title || '',
-      description: data.description || '',
-      verificationSteps: data.verificationSteps || '',
-      rewards: Number(data.rewards) || 0,
-      deadline: data.deadline || '',
-      link: data.link || '',
-      socialMedia: data.socialMedia || 'discord',
-      taskType: data.taskType || 'one-time',
-      type: data.type || taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE'
+      title: typeof data.title === 'string' ? data.title : '',
+      description: typeof data.description === 'string' ? data.description : '',
+      verificationSteps: typeof data.verificationSteps === 'string' ? data.verificationSteps : '',
+      rewards: typeof data.rewards === 'number' ? data.rewards : Number(data.rewards) || 0,
+      deadline: typeof data.deadline === 'string' ? data.deadline : '',
+      link: typeof data.link === 'string' ? data.link : '',
+      socialMedia: (typeof data.socialMedia === 'string' && (data.socialMedia === 'discord' || data.socialMedia === 'X')) ? data.socialMedia : 'discord',
+      taskType: (typeof data.taskType === 'string' && (data.taskType === 'daily' || data.taskType === 'one-time')) ? data.taskType : 'one-time',
+      type: typeof data.type === 'string' ? data.type : taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE'
     };
     
     // Update local state for preview in real-time
     setFormData(taskData);
   };
 
-  const handleFormSubmit = (data: Record<string, any>) => {
+  const handleFormSubmit = (data: Record<string, unknown>) => {
     const taskData: TaskFormData = {
-      title: data.title || '',
-      description: data.description || '',
-      verificationSteps: data.verificationSteps || '',
-      rewards: Number(data.rewards) || 0,
-      deadline: data.deadline || '',
-      link: data.link || '',
-      socialMedia: data.socialMedia || 'discord',
-      taskType: data.taskType || 'one-time',
-      type: data.type || taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE'
+      title: typeof data.title === 'string' ? data.title : '',
+      description: typeof data.description === 'string' ? data.description : '',
+      verificationSteps: typeof data.verificationSteps === 'string' ? data.verificationSteps : '',
+      rewards: typeof data.rewards === 'number' ? data.rewards : Number(data.rewards) || 0,
+      deadline: typeof data.deadline === 'string' ? data.deadline : '',
+      link: typeof data.link === 'string' ? data.link : '',
+      socialMedia: (typeof data.socialMedia === 'string' && (data.socialMedia === 'discord' || data.socialMedia === 'X')) ? data.socialMedia : 'discord',
+      taskType: (typeof data.taskType === 'string' && (data.taskType === 'daily' || data.taskType === 'one-time')) ? data.taskType : 'one-time',
+      type: typeof data.type === 'string' ? data.type : taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE'
     };
     
     onSubmit(taskData);
@@ -194,7 +194,7 @@ export default function CreateTaskModal({
               onCancel={onClose}
               onChange={handleFormChange}
               isLoading={isLoading}
-              initialData={formData}
+              initialData={formData as unknown as Record<string, unknown>}
               className="flex-1"
               hideTitle={true}
               hideBorder={true}

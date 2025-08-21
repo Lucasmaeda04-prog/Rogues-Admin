@@ -78,30 +78,30 @@ export default function CreateShopItemModal({
     }
   };
 
-  const handleFormChange = (data: Record<string, any>) => {
+  const handleFormChange = (data: Record<string, unknown>) => {
     const shopData: ShopItemFormData = {
-      name: data.name || '',
-      description: data.description || '',
-      price: Number(data.price) || 0,
-      quantity: Number(data.quantity) || 0,
-      tag: data.tag || '',
-      category: data.category || '',
-      image: data.image || ''
+      name: typeof data.name === 'string' ? data.name : '',
+      description: typeof data.description === 'string' ? data.description : '',
+      price: typeof data.price === 'number' ? data.price : Number(data.price) || 0,
+      quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
+      tag: typeof data.tag === 'string' ? data.tag : '',
+      category: typeof data.category === 'string' ? data.category : '',
+      image: typeof data.image === 'string' ? data.image : ''
     };
     
     // Update local state for preview in real-time
     setFormData(shopData);
   };
 
-  const handleFormSubmit = (data: Record<string, any>) => {
+  const handleFormSubmit = (data: Record<string, unknown>) => {
     const shopData: ShopItemFormData = {
-      name: data.name || '',
-      description: data.description || '',
-      price: Number(data.price) || 0,
-      quantity: Number(data.quantity) || 0,
-      tag: data.tag || '',
-      category: data.category || '',
-      image: data.image || ''
+      name: typeof data.name === 'string' ? data.name : '',
+      description: typeof data.description === 'string' ? data.description : '',
+      price: typeof data.price === 'number' ? data.price : Number(data.price) || 0,
+      quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
+      tag: typeof data.tag === 'string' ? data.tag : '',
+      category: typeof data.category === 'string' ? data.category : '',
+      image: typeof data.image === 'string' ? data.image : ''
     };
     
     onSubmit(shopData);
@@ -141,7 +141,7 @@ export default function CreateShopItemModal({
               onCancel={onClose}
               onChange={handleFormChange}
               isLoading={isLoading}
-              initialData={formData}
+              initialData={formData as unknown as Record<string, unknown>}
               className="flex-1"
               hideTitle={true}
               hideBorder={true}

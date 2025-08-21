@@ -14,7 +14,7 @@ export default function DebugPage() {
     setIsTaskModalOpen(false)
   }
 
-  const testEndpoint = async (endpoint: string, method = 'GET', body?: any) => {
+  const testEndpoint = async (endpoint: string, method = 'GET', body?: unknown) => {
     setLoading(true)
     setResult('')
     

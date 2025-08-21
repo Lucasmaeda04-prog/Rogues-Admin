@@ -1,6 +1,5 @@
 import { FormConfig } from './GenericForm'
 import { isValidBrazilianDate } from '@/lib/dateUtils'
-import { TaskType } from '@/types'
 
 // Helper function to format task type labels
 function formatTaskTypeLabel(type: string): string {
@@ -57,7 +56,8 @@ export const adminFormConfig: FormConfig = {
       required: true,
       validation: {
         minLength: 8,
-        custom: (value: string) => {
+        custom: (value: unknown) => {
+          if (typeof value !== 'string') return null
           if (!/[A-Z]/.test(value)) return 'Password must contain at least 1 uppercase letter'
           if (!/[0-9]/.test(value)) return 'Password must contain at least 1 number'
           return null
@@ -71,7 +71,7 @@ export const adminFormConfig: FormConfig = {
       placeholder: 'Confirm Password',
       required: true,
       validation: {
-        custom: (_value: string, _formData?: Record<string, any>) => {
+        custom: () => {
           // Note: This would need to be enhanced to access other field values
           return null
         }
@@ -119,8 +119,8 @@ export const adminEditFormConfig: FormConfig = {
       required: false,
       validation: {
         minLength: 8,
-        custom: (value: string) => {
-          if (!value) return null // Allow empty password for edit mode
+        custom: (value: unknown) => {
+          if (typeof value !== 'string' || !value) return null // Allow empty password for edit mode
           if (!/[A-Z]/.test(value)) return 'Password must contain at least 1 uppercase letter'
           if (!/[0-9]/.test(value)) return 'Password must contain at least 1 number'
           return null
@@ -134,8 +134,10 @@ export const adminEditFormConfig: FormConfig = {
       placeholder: 'Confirm new password',
       required: false,
       validation: {
-        custom: (value: string, formData?: Record<string, any>) => {
+        custom: (value: unknown, formData?: Record<string, unknown>) => {
+          if (typeof value !== 'string') return null
           const password = formData?.password
+          if (typeof password !== 'string') return null
           if (!password && !value) return null // Both empty is OK
           if (password && !value) return 'Please confirm your password'
           if (!password && value) return 'Please enter a password first'
@@ -197,7 +199,8 @@ export function createTaskFormConfig(taskTypes: string[] = []): FormConfig {
       placeholder: 'Put a number > 0',
       required: true,
       validation: {
-        custom: (value: number) => {
+        custom: (value: unknown) => {
+          if (typeof value !== 'number') return null
           if (value <= 0) return 'Price must be greater than 0'
           return null
         }
@@ -220,9 +223,11 @@ export function createTaskFormConfig(taskTypes: string[] = []): FormConfig {
       type: 'text',
       placeholder: '23/02/2024 - 18:00',
       description: 'Format: DD/MM/YYYY - HH:MM (required for one-time tasks)',
-      conditionalDisabled: (formData: Record<string, any>) => formData?.taskType === 'daily',
+      conditionalDisabled: (formData: Record<string, unknown>) => formData?.taskType === 'daily',
       validation: {
-        custom: (value: string, formData?: Record<string, any>) => {
+        custom: (value: unknown, formData?: Record<string, unknown>) => {
+          if (typeof value !== 'string') return null
+          
           // Se for one-time task, deadline é obrigatório
           if (formData?.taskType === 'one-time' && (!value || value.trim() === '')) {
             return 'Deadline is required for one-time tasks';
@@ -311,7 +316,8 @@ export const shopItemFormConfig: FormConfig = {
       group: 'price-quantity',
       groupWidth: 'flex-1 sm:w-[230px]',
       validation: {
-        custom: (value: number) => {
+        custom: (value: unknown) => {
+          if (typeof value !== 'number') return null
           if (value <= 0) return 'Price must be greater than 0'
           return null
         }
@@ -326,7 +332,8 @@ export const shopItemFormConfig: FormConfig = {
       group: 'price-quantity',
       groupWidth: 'flex-1 sm:w-[251px]',
       validation: {
-        custom: (value: number) => {
+        custom: (value: unknown) => {
+          if (typeof value !== 'number') return null
           if (value < 0) return 'Quantity cannot be negative'
           return null
         }

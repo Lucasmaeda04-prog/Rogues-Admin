@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Image from 'next/image'
 import Modal from './modal'
 
 interface DeleteConfirmationModalProps {
@@ -20,9 +21,11 @@ interface DeleteConfirmationModalProps {
 function InfoIcon({ icon = "/assets/info.svg" }: { icon?: string }) {
   return (
     <div className="w-[50px] h-[50px] flex items-center justify-center">
-      <img 
+      <Image 
         src={icon} 
         alt="Info" 
+        width={50}
+        height={50}
         className="w-[50px] h-[50px]"
       />
     </div>

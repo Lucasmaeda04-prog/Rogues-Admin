@@ -7,6 +7,7 @@ import { EditIcon, DeleteIcon } from '@/components/Icons'
 import { getTaskSocialInfo } from '@/lib/taskUtils'
 import CreateTaskModal, { TaskFormData } from '@/components/modals/CreateTaskModal'
 import { convertToTimestamp } from '@/lib/dateUtils'
+import type { TaskType } from '@/types'
 
 export default function TasksTab() {
   const { tasks, createTask } = useTasks()
@@ -34,7 +35,7 @@ export default function TasksTab() {
         deadline: data.taskType === 'daily' 
           ? new Date().toISOString().slice(0, 19).replace('T', ' ') 
           : convertToTimestamp(data.deadline || ''), // Converter deadline brasileiro para formato MySQL
-        type: taskType as any,
+        type: taskType as TaskType,
         isDaily: data.taskType === 'daily', // Converter taskType para boolean
         link: data.link || '', // Link opcional da task
       }

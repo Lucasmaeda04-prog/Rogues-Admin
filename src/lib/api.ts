@@ -57,7 +57,7 @@ export class ApiClient {
       try {
         const errorData = JSON.parse(errorText)
         errorMessage = errorData.message || errorMessage
-      } catch (e) {
+      } catch {
         // If not JSON, use the text as error message
         errorMessage = errorText || errorMessage
       }
@@ -140,7 +140,7 @@ export class ApiClient {
       formData.append('name', data.name);
       formData.append('description', data.description || '');
       formData.append('price', data.price.toString());
-      formData.append('tag', data.tag);
+      formData.append('tag', data.tag || '');
       formData.append('categoryId', data.categoryId.toString());
       formData.append('available', (data.available ?? true).toString());
       formData.append('quantity', (data.quantity ?? 0).toString());
@@ -179,7 +179,7 @@ export class ApiClient {
         try {
           const errorData = JSON.parse(errorText)
           errorMessage = errorData.message || errorMessage
-        } catch (e) {
+        } catch {
           errorMessage = errorText || errorMessage
         }
         
@@ -272,8 +272,8 @@ export class ApiClient {
     })
   }
 
-  async updateAdmin(adminId: string, data: Partial<CreateAdminData>): Promise<{ message: string; admin: any }> {
-    return this.request<{ message: string; admin: any }>(`/auth/${adminId}`, {
+  async updateAdmin(adminId: string, data: Partial<CreateAdminData>): Promise<{ message: string; admin: Record<string, unknown> }> {
+    return this.request<{ message: string; admin: Record<string, unknown> }>(`/auth/${adminId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     })

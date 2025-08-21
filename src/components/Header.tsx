@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 interface HeaderProps {
   user?: {
-    name?: string
+    name?: string | null
     email: string
-    role: 'admin' | 'super_admin'
+    isSuper?: boolean
   }
 }
 
@@ -23,8 +24,13 @@ export default function Header({ user }: HeaderProps) {
   return (
     <header className="bg-gradient-to-r from-blue-900 via-blue-700 via-blue-500 via-cyan-400 to-blue-800 text-white px-6 py-3 flex items-center justify-between relative before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-cyan-300/30 before:to-transparent before:animate-pulse">
     
-      <img className ="h-10 relative z-10" src='/assets/Logo.png'>
-      </img>
+      <Image 
+        className="h-10 relative z-10" 
+        src="/assets/Logo.png" 
+        alt="Rogues Carrot Bar Logo" 
+        width={40} 
+        height={40} 
+      />
 
       {/* User Menu */}
       <div className="relative z-10">

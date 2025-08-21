@@ -18,10 +18,10 @@ export interface FormField {
     minLength?: number
     maxLength?: number
     pattern?: RegExp
-    custom?: (value: any, formData?: Record<string, any>) => string | null // Returns error message or null
+    custom?: (value: unknown, formData?: Record<string, unknown>) => string | null // Returns error message or null
   }
   description?: string
-  conditionalDisabled?: (formData: Record<string, any>) => boolean // Conditionally disable field
+  conditionalDisabled?: (formData: Record<string, unknown>) => boolean // Conditionally disable field
   group?: string // Group name for side-by-side layout
   groupWidth?: string // Custom width for grouped fields (e.g., 'flex-1', 'w-[230px]')
 }
@@ -42,11 +42,11 @@ export interface FormConfig {
 
 interface GenericFormProps {
   config: FormConfig
-  onSubmit: (data: Record<string, any>) => void
+  onSubmit: (data: Record<string, unknown>) => void
   onCancel?: () => void
-  onChange?: (data: Record<string, any>) => void
+  onChange?: (data: Record<string, unknown>) => void
   isLoading?: boolean
-  initialData?: Record<string, any>
+  initialData?: Record<string, unknown>
   className?: string
   hideTitle?: boolean
   hideBorder?: boolean
@@ -63,7 +63,7 @@ export default function GenericForm({
   hideTitle = false,
   hideBorder = false
 }: GenericFormProps) {
-  const [formData, setFormData] = useState<Record<string, any>>({})
+  const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Group fields by group property
@@ -86,7 +86,7 @@ export default function GenericForm({
   }, [config.fields])
 
   const memoizedInitialData = useMemo(() => {
-    const initData: Record<string, any> = {}
+    const initData: Record<string, unknown> = {}
     config.fields.forEach(field => {
       if (field.type === 'checkbox') {
         initData[field.name] = initialData[field.name] ?? false
@@ -95,27 +95,27 @@ export default function GenericForm({
       }
     })
     return initData
-  }, [config.fields.length, JSON.stringify(initialData)])
+  }, [config.fields, initialData])
 
   useEffect(() => {
     setFormData(memoizedInitialData)
   }, [memoizedInitialData])
 
-  const validateField = (field: FormField, value: any): string | null => {
+  const validateField = (field: FormField, value: unknown): string | null => {
     if (field.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
       return `${field.label} is required`
     }
 
     if (field.validation) {
-      if (field.validation.minLength && value.length < field.validation.minLength) {
+      if (field.validation.minLength && typeof value === 'string' && value.length < field.validation.minLength) {
         return `${field.label} must be at least ${field.validation.minLength} characters`
       }
       
-      if (field.validation.maxLength && value.length > field.validation.maxLength) {
+      if (field.validation.maxLength && typeof value === 'string' && value.length > field.validation.maxLength) {
         return `${field.label} must be no more than ${field.validation.maxLength} characters`
       }
       
-      if (field.validation.pattern && !field.validation.pattern.test(value)) {
+      if (field.validation.pattern && typeof value === 'string' && !field.validation.pattern.test(value)) {
         return `${field.label} format is invalid`
       }
       
@@ -127,7 +127,7 @@ export default function GenericForm({
     return null
   }
 
-  const handleChange = (fieldName: string, value: any) => {
+  const handleChange = (fieldName: string, value: unknown) => {
     const newFormData = { ...formData, [fieldName]: value }
     setFormData(newFormData)
     
@@ -161,7 +161,7 @@ export default function GenericForm({
   }
 
   const handleReset = () => {
-    const resetData: Record<string, any> = {}
+    const resetData: Record<string, unknown> = {}
     config.fields.forEach(field => {
       if (field.type === 'checkbox') {
         resetData[field.name] = false
@@ -186,12 +186,6 @@ export default function GenericForm({
       extraClasses
     )
 
-    const commonProps = {
-      id: field.name,
-      disabled: isFieldDisabled,
-      className: getInputClassName()
-    }
-
     switch (field.type) {
       case 'textarea':
         return (
@@ -199,7 +193,7 @@ export default function GenericForm({
             id={field.name}
             disabled={isFieldDisabled}
             className={getInputClassName("resize-none")}
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string) || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             rows={3}
@@ -210,7 +204,7 @@ export default function GenericForm({
       case 'select':
         return (
           <CustomSelect
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string | number) || ''}
             onChange={(value) => handleChange(field.name, value)}
             options={field.options || []}
             placeholder={field.placeholder || `Select ${field.label}`}
@@ -225,7 +219,7 @@ export default function GenericForm({
             <input
               type="checkbox"
               id={field.name}
-              checked={formData[field.name] || false}
+              checked={(formData[field.name] as boolean) || false}
               onChange={(e) => handleChange(field.name, e.target.checked)}
               disabled={isLoading || field.disabled}
               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
@@ -262,7 +256,7 @@ export default function GenericForm({
       case 'image-upload':
         return (
           <ImageUpload
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string) || ''}
             onChange={(value) => handleChange(field.name, value)}
             disabled={isFieldDisabled}
           />
@@ -275,7 +269,7 @@ export default function GenericForm({
             disabled={isFieldDisabled}
             className={getInputClassName()}
             type="number"
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string | number) || ''}
             onChange={(e) => {
               const value = field.name === 'quantity' 
                 ? parseInt(e.target.value) || 0 
@@ -295,7 +289,7 @@ export default function GenericForm({
             disabled={isFieldDisabled}
             className={getInputClassName(field.name === 'name' ? "h-[47px] py-0" : "")}
             type={field.type}
-            value={formData[field.name] || ''}
+            value={(formData[field.name] as string | number) || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
             required={field.required}

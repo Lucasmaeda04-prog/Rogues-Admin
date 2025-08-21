@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { api } from '@/lib/api'
 import { useApi } from './useApi'
-import type { ShopCategory, StockMovement, CreateShopItemData } from '@/types'
+import type { ShopCategory, StockMovement, CreateShopCategoryData, CreateStockMovementData } from '@/types'
 
 export function useShopItems() {
   const { data, loading, error, refetch } = useApi(() => api.getShopItems())
@@ -71,7 +71,7 @@ export function useShopItems() {
 export function useShopCategories() {
   const { data, loading, error, refetch } = useApi(() => api.getShopCategories())
 
-  const createCategory = useCallback(async (categoryData: Partial<ShopCategory>) => {
+  const createCategory = useCallback(async (categoryData: CreateShopCategoryData) => {
     try {
       await api.createShopCategory(categoryData)
       await refetch()
@@ -96,7 +96,7 @@ export function useShopCategories() {
 export function useStockMovements() {
   const { data, loading, error, refetch } = useApi(() => api.getStockMovements())
 
-  const createMovement = useCallback(async (movementData: Partial<StockMovement>) => {
+  const createMovement = useCallback(async (movementData: CreateStockMovementData) => {
     try {
       await api.createStockMovement(movementData)
       await refetch()

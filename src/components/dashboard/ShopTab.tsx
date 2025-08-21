@@ -51,15 +51,15 @@ export default function ShopTab() {
     }
   }
 
-  const handleEditItem = (item: any) => {
+  const handleEditItem = (item: Record<string, unknown>) => {
     const editData: ShopItemFormData = {
-      name: item.name,
-      description: item.description || '',
-      price: item.price,
-      quantity: item.quantity,
-      tag: item.tag || '',
-      category: item.categoryName || '',
-      image: item.image || ''
+      name: item.name as string,
+      description: (item.description as string) || '',
+      price: item.price as number,
+      quantity: item.quantity as number,
+      tag: (item.tag as string) || '',
+      category: (item.categoryName as string) || '',
+      image: (item.image as string) || ''
     }
     
     setEditingItem(editData)
@@ -142,7 +142,7 @@ export default function ShopTab() {
                 <td className="px-4 py-3 text-sm">
                   <div className="flex space-x-2">
                     <button 
-                      onClick={() => handleEditItem(item)}
+                      onClick={() => handleEditItem(item as unknown as Record<string, unknown>)}
                       className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
                     >
                       <EditIcon width={16} height={16} />
