@@ -173,12 +173,12 @@ export default function CreateTaskModal({
       
       <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
         <div 
-          className="bg-white rounded-[22px] w-full max-w-[1400px] max-h-[95vh] min-h-[700px] overflow-y-auto pointer-events-auto flex flex-col lg:flex-row"
+          className="bg-white rounded-[22px] w-full max-w-[1400px] max-h-[95vh] min-h-[700px] pointer-events-auto flex flex-col lg:flex-row"
           style={{ filter: 'none !important' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Left side - Form */}
-          <div className="flex-1 p-7 lg:pr-[21px] flex flex-col min-w-0 lg:min-w-[500px]">
+          <div className="flex-1 p-7 lg:pr-[21px] flex flex-col min-w-0 lg:min-w-[500px] overflow-y-auto">
             <div className="mb-6">
               <h2 className={cn("text-[#020202] text-[28px] font-semibold mb-2", Campton.className)}>
                 {mode === 'edit' ? 'Edit Task' : 'Create Task'}
@@ -203,7 +203,7 @@ export default function CreateTaskModal({
 
           {/* Right side - Preview */}
           <div className="w-full lg:w-[600px] lg:min-w-[500px] bg-white lg:rounded-r-[22px] rounded-b-[22px] lg:rounded-b-none pl-[20px] flex flex-col">
-            <div className="w-full h-full bg-black lg:rounded-l-[16px] rounded-b-[22px] lg:rounded-b-none p-[35px] flex flex-col">
+            <div className="w-full h-full bg-black lg:rounded-l-[16px] lg:rounded-r-[22px] rounded-b-[22px] lg:rounded-b-none p-[35px] flex flex-col">
               <div className="mb-6">
                 <h3 className={cn("text-[#d7d7d7] text-[28px] w-full mb-2", Campton.className)}>
                   Task Preview

@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import { Campton } from '@/lib/fonts'
+import { cn } from '@/lib/cn'
 import CustomSelect from './CustomSelect'
+import ImageUpload from '../ui/ImageUpload'
 
 export interface FormField {
   name: string
   label: string
-  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'checkbox' | 'select' | 'radio'
+  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'checkbox' | 'select' | 'radio' | 'image-upload'
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -19,6 +22,14 @@ export interface FormField {
   }
   description?: string
   conditionalDisabled?: (formData: Record<string, any>) => boolean // Conditionally disable field
+  group?: string // Group name for side-by-side layout
+  groupWidth?: string // Custom width for grouped fields (e.g., 'flex-1', 'w-[230px]')
+}
+
+export interface FieldGroup {
+  name: string
+  fields: FormField[]
+  className?: string // Custom CSS classes for the group container
 }
 
 export interface FormConfig {
@@ -54,6 +65,25 @@ export default function GenericForm({
 }: GenericFormProps) {
   const [formData, setFormData] = useState<Record<string, any>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Group fields by group property
+  const groupedFields = useMemo(() => {
+    const groups: { [key: string]: FormField[] } = {}
+    const ungrouped: FormField[] = []
+
+    config.fields.forEach(field => {
+      if (field.group) {
+        if (!groups[field.group]) {
+          groups[field.group] = []
+        }
+        groups[field.group].push(field)
+      } else {
+        ungrouped.push(field)
+      }
+    })
+
+    return { groups, ungrouped }
+  }, [config.fields])
 
   const memoizedInitialData = useMemo(() => {
     const initData: Record<string, any> = {}
@@ -148,23 +178,31 @@ export default function GenericForm({
     const isConditionallyDisabled = field.conditionalDisabled ? field.conditionalDisabled(formData) : false
     const isFieldDisabled = isLoading || field.disabled || isConditionallyDisabled
     
+    const getInputClassName = (extraClasses = '') => cn(
+      "w-full px-3.5 py-2 bg-[#f9f9f9] rounded-[10px] border-[1.3px] border-[#efefef] text-[14px] font-light placeholder:text-[#949191] focus:outline-none focus:border-[#020202]",
+      Campton.className,
+      errors[field.name] && "border-red-500",
+      isConditionallyDisabled && "opacity-50 cursor-not-allowed",
+      extraClasses
+    )
+
     const commonProps = {
       id: field.name,
       disabled: isFieldDisabled,
-      className: `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-        errors[field.name] ? 'border-red-300' : 'border-gray-300'
-      } ${isConditionallyDisabled ? 'opacity-50 cursor-not-allowed' : ''}`
+      className: getInputClassName()
     }
 
     switch (field.type) {
       case 'textarea':
         return (
           <textarea
-            {...commonProps}
+            id={field.name}
+            disabled={isFieldDisabled}
+            className={getInputClassName("resize-none")}
             value={formData[field.name] || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
             placeholder={field.placeholder}
-            rows={4}
+            rows={3}
             required={field.required}
           />
         )
@@ -221,10 +259,41 @@ export default function GenericForm({
           </div>
         )
 
+      case 'image-upload':
+        return (
+          <ImageUpload
+            value={formData[field.name] || ''}
+            onChange={(value) => handleChange(field.name, value)}
+            disabled={isFieldDisabled}
+          />
+        )
+
+      case 'number':
+        return (
+          <input
+            id={field.name}
+            disabled={isFieldDisabled}
+            className={getInputClassName()}
+            type="number"
+            value={formData[field.name] || ''}
+            onChange={(e) => {
+              const value = field.name === 'quantity' 
+                ? parseInt(e.target.value) || 0 
+                : parseFloat(e.target.value) || 0;
+              handleChange(field.name, value);
+            }}
+            placeholder={field.placeholder}
+            min="0"
+            required={field.required}
+          />
+        )
+
       default:
         return (
           <input
-            {...commonProps}
+            id={field.name}
+            disabled={isFieldDisabled}
+            className={getInputClassName(field.name === 'name' ? "h-[47px] py-0" : "")}
             type={field.type}
             value={formData[field.name] || ''}
             onChange={(e) => handleChange(field.name, e.target.value)}
@@ -235,40 +304,79 @@ export default function GenericForm({
     }
   }
 
+  const renderSingleField = (field: FormField, groupWidth?: string) => (
+    <div key={field.name} className={cn("space-y-3", groupWidth)}>
+      {field.type !== 'checkbox' && (
+        <label htmlFor={field.name} className={cn(
+          "block text-[#4b4b4b] text-[18px] font-medium",
+          Campton.className
+        )}>
+          {field.label} {field.required && '*'}
+        </label>
+      )}
+      
+      <div className="relative">
+        {renderField(field)}
+      </div>
+      
+      {errors[field.name] && (
+        <p className="text-red-500 text-xs">{errors[field.name]}</p>
+      )}
+      
+      {field.description && (
+        <p className={cn("text-[#949191] text-xs", Campton.className)}>
+          {field.description}
+        </p>
+      )}
+    </div>
+  )
+
+  const renderGroup = (groupName: string, fields: FormField[]) => {
+    // Determine group layout classes based on group name or use default
+    const groupClasses = groupName === 'price-quantity' 
+      ? "flex flex-col sm:flex-row gap-4 sm:gap-[38px]"
+      : groupName === 'tag-category'
+      ? "flex flex-col sm:flex-row gap-4 sm:gap-5"
+      : "flex flex-col sm:flex-row gap-4"
+
+    return (
+      <div key={groupName} className={groupClasses}>
+        {fields.map(field => {
+          // Use custom width or default flex-1
+          const fieldWidth = field.groupWidth || "flex-1"
+          return renderSingleField(field, fieldWidth)
+        })}
+      </div>
+    )
+  }
+
   return (
-    <div className={`bg-white ${!hideBorder ? 'rounded-lg shadow border' : ''} p-6 ${className}`}>
+    <div className={`bg-white ${!hideBorder ? 'rounded-lg shadow border' : ''} ${!hideBorder ? 'p-6' : ''} ${className} flex flex-col h-full`}>
       {!hideTitle && (
         <h2 className="text-lg font-semibold text-gray-900 mb-6">{config.title}</h2>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {config.fields.map(field => (
-          <div key={field.name}>
-            {field.type !== 'checkbox' && (
-              <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
-                {field.label} {field.required && '*'}
-              </label>
-            )}
-            
-            {renderField(field)}
-            
-            {errors[field.name] && (
-              <p className="text-red-500 text-xs mt-1">{errors[field.name]}</p>
-            )}
-            
-            {field.description && (
-              <p className="text-xs text-gray-500 mt-1">{field.description}</p>
-            )}
-          </div>
-        ))}
+      <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        <div className="space-y-5 flex-1 overflow-y-auto">
+          {/* Render ungrouped fields first */}
+          {groupedFields.ungrouped.map(field => renderSingleField(field))}
+          
+          {/* Render grouped fields */}
+          {Object.entries(groupedFields.groups).map(([groupName, fields]) => 
+            renderGroup(groupName, fields)
+          )}
+        </div>
 
-        <div className="flex gap-3 pt-6">
+        <div className="flex flex-col sm:flex-row gap-2.5 mt-4 flex-shrink-0">
           {(config.showCancel !== false) && (
             <button
               type="button"
               onClick={handleReset}
               disabled={isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className={cn(
+                "flex-1 h-[47px] bg-[#a0a0a0] text-white rounded-[9px] border border-[#efefef] text-[20px] font-semibold hover:bg-[#909090] transition-colors disabled:opacity-50",
+                Campton.className
+              )}
             >
               {config.cancelLabel || 'Cancel'}
             </button>
@@ -276,7 +384,10 @@ export default function GenericForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className={cn(
+              "flex-1 sm:w-[317px] h-[47px] bg-[#09171a] text-white rounded-[9px] border border-[#efefef] text-[20px] font-semibold hover:bg-[#131f22] transition-colors disabled:opacity-50",
+              Campton.className
+            )}
           >
             {isLoading ? 'Saving...' : (config.submitLabel || 'Save')}
           </button>

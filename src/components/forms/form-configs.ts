@@ -277,13 +277,14 @@ export const taskFormConfig: FormConfig = createTaskFormConfig()
 
 export const shopItemFormConfig: FormConfig = {
   title: 'Create Shop Item',
-  submitLabel: 'Create Item',
+  submitLabel: 'Save',
+  cancelLabel: 'Cancel',
   fields: [
     {
       name: 'name',
       label: 'Item Name',
       type: 'text',
-      placeholder: 'Enter item name',
+      placeholder: 'Enter your name',
       required: true,
       validation: {
         minLength: 2,
@@ -295,7 +296,9 @@ export const shopItemFormConfig: FormConfig = {
       label: 'Description',
       type: 'textarea',
       placeholder: 'Enter item description',
+      required: true,
       validation: {
+        minLength: 10,
         maxLength: 500
       }
     },
@@ -303,11 +306,13 @@ export const shopItemFormConfig: FormConfig = {
       name: 'price',
       label: 'Price',
       type: 'number',
-      placeholder: 'Enter price',
+      placeholder: 'Put a number > 0',
       required: true,
+      group: 'price-quantity',
+      groupWidth: 'flex-1 sm:w-[230px]',
       validation: {
         custom: (value: number) => {
-          if (value < 0) return 'Price cannot be negative'
+          if (value <= 0) return 'Price must be greater than 0'
           return null
         }
       }
@@ -316,8 +321,10 @@ export const shopItemFormConfig: FormConfig = {
       name: 'quantity',
       label: 'Quantity',
       type: 'number',
-      placeholder: 'Enter available quantity',
+      placeholder: 'Put a number > 0',
       required: true,
+      group: 'price-quantity',
+      groupWidth: 'flex-1 sm:w-[251px]',
       validation: {
         custom: (value: number) => {
           if (value < 0) return 'Quantity cannot be negative'
@@ -326,11 +333,36 @@ export const shopItemFormConfig: FormConfig = {
       }
     },
     {
-      name: 'image',
-      label: 'Image/Emoji',
+      name: 'tag',
+      label: 'Tag',
       type: 'text',
-      placeholder: 'Enter emoji or image URL',
-      description: 'Use an emoji or image URL to represent this item'
+      placeholder: 'Enter tag',
+      required: true,
+      group: 'tag-category',
+      groupWidth: 'flex-1',
+      validation: {
+        minLength: 1,
+        maxLength: 50
+      }
+    },
+    {
+      name: 'category',
+      label: 'Category',
+      type: 'text',
+      placeholder: 'Enter category',
+      required: true,
+      group: 'tag-category',
+      groupWidth: 'flex-1',
+      validation: {
+        minLength: 1,
+        maxLength: 50
+      }
+    },
+    {
+      name: 'image',
+      label: 'Image',
+      type: 'image-upload',
+      description: 'Upload an image for this item'
     }
   ]
 }
