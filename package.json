@@ -5,10 +5,12 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "pages:build": "NEXT_PUBLIC_API_URL='https://rogues-admin-production.up.railway.app' npx @cloudflare/next-on-pages",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@cloudflare/next-on-pages": "^1.13.14",
     "@types/react-dropzone": "^4.2.2",
     "clsx": "^2.1.1",
     "lucide-react": "^0.540.0",

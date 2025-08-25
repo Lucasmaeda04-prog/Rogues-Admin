@@ -92,6 +92,17 @@ export interface Badge {
   updatedAt: string
 }
 
+export interface BadgeData {
+  id: number;
+  name: string;
+  description: string;
+  requirement: string;
+  image: string;
+  innerIcon?: string;
+  isUnlocked: boolean;
+  isRequested?: boolean; // New field for requested state
+}
+
 export interface CreateBadgeResponse {
   message: string
   badge: Badge

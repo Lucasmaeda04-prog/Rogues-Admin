@@ -25,11 +25,13 @@ export default function Header({ user }: HeaderProps) {
     <header className="bg-gradient-to-r from-blue-900 via-blue-700 via-blue-500 via-cyan-400 to-blue-800 text-white px-6 py-3 flex items-center justify-between relative before:absolute before:top-0 before:left-0 before:w-full before:h-full before:bg-gradient-to-r before:from-transparent before:via-cyan-300/30 before:to-transparent before:animate-pulse">
     
       <Image 
-        className="h-10 relative z-10" 
+        className="h-10 w-auto relative z-10" 
         src="/assets/Logo.png" 
         alt="Rogues Carrot Bar Logo" 
-        width={40} 
+        width={120} 
         height={40} 
+        priority
+        quality={100}
       />
 
       {/* User Menu */}

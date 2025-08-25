@@ -34,7 +34,7 @@ export function useApi<T>(
       }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [apiCall, ...deps])
+  }, deps)
 
   useEffect(() => {
     fetchData()

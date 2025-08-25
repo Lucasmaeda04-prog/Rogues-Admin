@@ -1,11 +1,33 @@
 'use client'
 
+import { useState } from 'react'
 import { useBadges } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
 import Image from 'next/image'
+import CreateBadgeModal, { BadgeFormData } from '@/components/modals/CreateBadgeModal'
 
 export default function BadgesTab() {
   const { badges } = useBadges()
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleCreateBadge = async (data: BadgeFormData) => {
+    setIsLoading(true)
+    try {
+      // TODO: Implement badge creation API call
+      console.log('Creating badge:', data)
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      setIsCreateModalOpen(false)
+      // TODO: Refresh badges list or add optimistic update
+    } catch (error) {
+      console.error('Error creating badge:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <div className="animate-fadeIn">
@@ -21,8 +43,11 @@ export default function BadgesTab() {
             </select>
           </div>
         </div>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
-          + Create Item
+        <button 
+          onClick={() => setIsCreateModalOpen(true)}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        >
+          + Create Badge
         </button>
       </div>
 
@@ -79,6 +104,14 @@ export default function BadgesTab() {
           </tbody>
         </table>
       </div>
+
+      {/* Create Badge Modal */}
+      <CreateBadgeModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateBadge}
+        isLoading={isLoading}
+      />
     </div>
   )
 }

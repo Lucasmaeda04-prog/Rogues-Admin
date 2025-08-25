@@ -53,9 +53,12 @@ export default function ImageUpload({
         canvas.width = width;
         canvas.height = height;
 
-        // Draw and compress
+        // Draw and compress, preserving format
         ctx?.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        // Preserve PNG format for transparency, use JPEG for others
+        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const compressedDataUrl = canvas.toDataURL(mimeType, quality);
         resolve(compressedDataUrl);
       };
 

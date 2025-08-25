@@ -411,11 +411,9 @@ export const badgeFormConfig: FormConfig = {
     },
     {
       name: 'image',
-      label: 'Badge Icon',
-      type: 'text',
-      placeholder: 'Enter emoji or icon',
-      required: true,
-      description: 'Use an emoji to represent this badge (e.g., 🏆, 🥇, ⭐)'
+      label: 'Badge Image',
+      type: 'image-upload',
+      description: 'Upload an image for this badge'
     }
   ]
 }
