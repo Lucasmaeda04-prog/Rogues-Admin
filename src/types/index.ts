@@ -202,9 +202,9 @@ export interface CreateTaskData {
 }
 
 export interface CreateBadgeData {
-  name: string
   title: string
   description?: string
+  howToUnlock: string
   image?: string
 }
 

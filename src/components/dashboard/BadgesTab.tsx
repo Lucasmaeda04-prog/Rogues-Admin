@@ -7,23 +7,36 @@ import Image from 'next/image'
 import CreateBadgeModal, { BadgeFormData } from '@/components/modals/CreateBadgeModal'
 
 export default function BadgesTab() {
-  const { badges } = useBadges()
+  const { badges, createBadge } = useBadges()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const handleCreateBadge = async (data: BadgeFormData) => {
+    console.log('Creating badge with form data:', data)
     setIsLoading(true)
+    
     try {
-      // TODO: Implement badge creation API call
-      console.log('Creating badge:', data)
+      // Convert BadgeFormData to CreateBadgeData
+      const createBadgeData = {
+        title: data.title,
+        description: data.description,
+        howToUnlock: data.howToUnlock,
+        image: data.image
+      }
+
+      console.log('Sending to API:', createBadgeData)
+      const result = await createBadge(createBadgeData)
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      setIsCreateModalOpen(false)
-      // TODO: Refresh badges list or add optimistic update
+      if (result.success) {
+        console.log('Badge created successfully')
+        setIsCreateModalOpen(false)
+      } else {
+        console.error('Error creating badge:', result.error)
+        alert(`Erro ao criar badge: ${result.error}`)
+      }
     } catch (error) {
-      console.error('Error creating badge:', error)
+      console.error('Unexpected error:', error)
+      alert('Erro inesperado ao criar badge')
     } finally {
       setIsLoading(false)
     }

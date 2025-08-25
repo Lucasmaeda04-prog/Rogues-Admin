@@ -355,25 +355,14 @@ export const badgeFormConfig: FormConfig = {
   submitLabel: 'Create Badge',
   fields: [
     {
-      name: 'name',
-      label: 'Badge Name',
+      name: 'title',
+      label: 'Title',
       type: 'text',
-      placeholder: 'Enter badge name',
+      placeholder: 'Enter badge title',
       required: true,
       validation: {
         minLength: 2,
         maxLength: 100
-      }
-    },
-    {
-      name: 'title',
-      label: 'Badge Title',
-      type: 'text',
-      placeholder: 'Enter badge title/subtitle',
-      required: true,
-      validation: {
-        minLength: 2,
-        maxLength: 50
       }
     },
     {
@@ -383,6 +372,17 @@ export const badgeFormConfig: FormConfig = {
       placeholder: 'Enter badge description',
       validation: {
         maxLength: 300
+      }
+    },
+    {
+      name: 'howToUnlock',
+      label: 'How to Unlock',
+      type: 'textarea',
+      placeholder: 'Explain how users can unlock this badge',
+      required: true,
+      validation: {
+        minLength: 10,
+        maxLength: 500
       }
     },
     {

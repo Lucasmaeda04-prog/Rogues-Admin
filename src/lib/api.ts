@@ -238,6 +238,64 @@ export class ApiClient {
   }
 
   async createBadge(data: CreateBadgeData): Promise<CreateBadgeResponse> {
+    // If there's an image file, use FormData instead of JSON
+    if (data.image && data.image.startsWith('data:')) {
+      const formData = new FormData();
+      
+      // Convert base64 to blob
+      const imageResponse = await fetch(data.image);
+      const blob = await imageResponse.blob();
+      
+      formData.append('image', blob, 'badge.jpg');
+      formData.append('title', data.title);
+      formData.append('description', data.description || '');
+      formData.append('howToUnlock', data.howToUnlock);
+
+      const url = `${this.baseUrl}/badge`
+      const config = {
+        method: 'POST',
+        headers: {
+          ...this.getAuthHeaders(),
+        },
+        body: formData,
+      }
+
+      console.log('API Request (FormData):', {
+        url,
+        method: 'POST',
+        headers: { 
+          ...config.headers, 
+          Authorization: 'Authorization' in (config.headers || {}) ? '[PRESENT]' : '[MISSING]' 
+        }
+      })
+
+      const apiResponse = await fetch(url, config)
+
+      console.log('API Response:', {
+        status: apiResponse.status,
+        statusText: apiResponse.statusText,
+        headers: Object.fromEntries(apiResponse.headers.entries())
+      })
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text()
+        console.error('API Error Response:', errorText)
+        
+        let errorMessage = `HTTP error! status: ${apiResponse.status}`
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.message || errorMessage
+        } catch {
+          errorMessage = errorText || errorMessage
+        }
+        
+        throw new Error(errorMessage)
+      }
+
+      return apiResponse.json()
+    }
+    
+    // Fallback to JSON for badges without images
     return this.request<CreateBadgeResponse>('/badge', {
       method: 'POST',
       body: JSON.stringify(data),

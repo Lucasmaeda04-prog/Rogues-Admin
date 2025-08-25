@@ -18,9 +18,9 @@ interface CreateBadgeModalProps {
 }
 
 export interface BadgeFormData {
-  name: string;
   title: string;
   description: string;
+  howToUnlock: string;
   image: string;
 }
 
@@ -33,9 +33,9 @@ export default function CreateBadgeModal({
   mode = 'create'
 }: CreateBadgeModalProps) {
   const [formData, setFormData] = useState<BadgeFormData>({
-    name: '',
     title: '',
     description: '',
+    howToUnlock: '',
     image: ''
   });
 
@@ -46,9 +46,9 @@ export default function CreateBadgeModal({
       setFormData(editData);
     } else if (mode === 'create') {
       setFormData({
-        name: '',
         title: '',
         description: '',
+        howToUnlock: '',
         image: ''
       });
     }
@@ -73,9 +73,9 @@ export default function CreateBadgeModal({
 
   const handleFormChange = (data: Record<string, unknown>) => {
     const badgeData: BadgeFormData = {
-      name: typeof data.name === 'string' ? data.name : '',
       title: typeof data.title === 'string' ? data.title : '',
       description: typeof data.description === 'string' ? data.description : '',
+      howToUnlock: typeof data.howToUnlock === 'string' ? data.howToUnlock : '',
       image: typeof data.image === 'string' ? data.image : ''
     };
     
@@ -85,9 +85,9 @@ export default function CreateBadgeModal({
 
   const handleFormSubmit = (data: Record<string, unknown>) => {
     const badgeData: BadgeFormData = {
-      name: typeof data.name === 'string' ? data.name : '',
       title: typeof data.title === 'string' ? data.title : '',
       description: typeof data.description === 'string' ? data.description : '',
+      howToUnlock: typeof data.howToUnlock === 'string' ? data.howToUnlock : '',
       image: typeof data.image === 'string' ? data.image : ''
     };
     
@@ -97,9 +97,9 @@ export default function CreateBadgeModal({
   // Create preview data for ProfileBadge
   const previewBadgeData = {
     id: 999, // Preview ID
-    name: formData.name || 'Badge Name',
+    name: formData.title || 'Badge Title',
     description: formData.description || 'Badge description will appear here',
-    requirement: 'This is how you can unlock this badge',
+    requirement: formData.howToUnlock || 'This is how you can unlock this badge',
     image: formData.image || '/assets/1f0370151ddcfa7a9e9c8817eaf92f77a581778b.png', // Default badge image
     isUnlocked: true, // Show as unlocked for better preview
     isRequested: false

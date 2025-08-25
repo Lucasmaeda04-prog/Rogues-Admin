@@ -20,10 +20,9 @@ export function useBadges() {
   }, [refetch])
 
   const updateBadge = useCallback(async (id: string, badgeData: {
-    name?: string
     title?: string
     description?: string
-    criteria?: string
+    howToUnlock?: string
     image?: string
   }) => {
     try {
