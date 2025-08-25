@@ -27,7 +27,7 @@ export interface TaskFormData {
   link?: string;
   socialMedia: 'discord' | 'X';
   taskType: 'daily' | 'one-time';
-  type: string; // Tipo específico da task (ex: 'TWITTER_LIKE', 'DISCORD_TOWNHALL_PRESENCE')
+  taskCategoryId: number; // ID da categoria da task selecionada
 }
 
 export default function CreateTaskModal({ 
@@ -38,7 +38,6 @@ export default function CreateTaskModal({
   editData = null,
   mode = 'create'
 }: CreateTaskModalProps) {
-  const { taskTypes } = useTaskTypes();
   const [formData, setFormData] = useState<TaskFormData>({
     title: '',
     description: '',
@@ -48,8 +47,27 @@ export default function CreateTaskModal({
     link: '',
     socialMedia: 'discord',
     taskType: 'one-time',
-    type: taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE' // usar primeiro tipo disponível ou default
+    taskCategoryId: 0
   });
+
+  const { taskTypes } = useTaskTypes(formData.socialMedia);
+
+  // Auto-select first task type when taskTypes load or change
+  useEffect(() => {
+    if (taskTypes && taskTypes.length > 0) {
+      setFormData(prev => {
+        // Only update if current taskCategoryId is not valid for the current taskTypes
+        const validIds = taskTypes.map(t => t.taskCategoryId);
+        if (!prev.taskCategoryId || !validIds.includes(prev.taskCategoryId)) {
+          return {
+            ...prev,
+            taskCategoryId: taskTypes[0]?.taskCategoryId || 0
+          };
+        }
+        return prev;
+      });
+    }
+  }, [taskTypes]);
 
   // Update form data when editData changes
   useEffect(() => {
@@ -65,10 +83,10 @@ export default function CreateTaskModal({
         link: '',
         socialMedia: 'discord',
         taskType: 'one-time',
-        type: taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE' // usar primeiro tipo disponível ou default
+        taskCategoryId: taskTypes?.[0]?.taskCategoryId || 0
       });
     }
-  }, [editData, mode, taskTypes]);
+  }, [editData, mode]); // Remove taskTypes dependency - it was causing the reset!
 
   // Transform verification steps for preview
   const getVerificationStepsArray = useCallback(() => {
@@ -93,11 +111,6 @@ export default function CreateTaskModal({
     }
   }, [isOpen]);
 
-  // Debug: Log formData changes
-  useEffect(() => {
-    console.log('FormData updated:', formData);
-    console.log('Verification steps array:', getVerificationStepsArray());
-  }, [formData, getVerificationStepsArray]);
 
   if (!isOpen) return null;
 
@@ -120,7 +133,7 @@ export default function CreateTaskModal({
       link: typeof data.link === 'string' ? data.link : '',
       socialMedia: (typeof data.socialMedia === 'string' && (data.socialMedia === 'discord' || data.socialMedia === 'X')) ? data.socialMedia : 'discord',
       taskType: (typeof data.taskType === 'string' && (data.taskType === 'daily' || data.taskType === 'one-time')) ? data.taskType : 'one-time',
-      type: typeof data.type === 'string' ? data.type : taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE'
+      taskCategoryId: typeof data.taskCategoryId === 'number' ? data.taskCategoryId : Number(data.taskCategoryId) || formData.taskCategoryId
     };
     
     // Update local state for preview in real-time
@@ -137,7 +150,7 @@ export default function CreateTaskModal({
       link: typeof data.link === 'string' ? data.link : '',
       socialMedia: (typeof data.socialMedia === 'string' && (data.socialMedia === 'discord' || data.socialMedia === 'X')) ? data.socialMedia : 'discord',
       taskType: (typeof data.taskType === 'string' && (data.taskType === 'daily' || data.taskType === 'one-time')) ? data.taskType : 'one-time',
-      type: typeof data.type === 'string' ? data.type : taskTypes?.[0] || 'DISCORD_TOWNHALL_PRESENCE'
+      taskCategoryId: typeof data.taskCategoryId === 'number' ? data.taskCategoryId : Number(data.taskCategoryId) || taskTypes?.[0]?.taskCategoryId || 0
     };
     
     onSubmit(taskData);

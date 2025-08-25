@@ -5,7 +5,11 @@ import type { TaskType } from '@/types'
  * @param taskType - The task type (e.g., 'TWITTER_LIKE', 'DISCORD_TOWNHALL_PRESENCE')
  * @returns The social network name
  */
-export function getSocialNetworkFromTaskType(taskType: TaskType): string {
+export function getSocialNetworkFromTaskType(taskType: TaskType | undefined): string {
+  if (!taskType) {
+    return 'discord' // fallback default
+  }
+  
   const networkPart = taskType.split('_')[0].toLowerCase()
   
   // Map networks to display names
@@ -36,7 +40,11 @@ export function getSocialNetworkIcon(network: string): string {
  * @param taskType - The task type (e.g., 'TWITTER_LIKE', 'DISCORD_TOWNHALL_PRESENCE')
  * @returns The action part formatted for display
  */
-export function getActionFromTaskType(taskType: TaskType): string {
+export function getActionFromTaskType(taskType: TaskType | undefined): string {
+  if (!taskType) {
+    return 'Unknown Action' // fallback default
+  }
+  
   const parts = taskType.split('_')
   // Remove the first part (network) and join the rest
   const actionParts = parts.slice(1)
@@ -52,7 +60,7 @@ export function getActionFromTaskType(taskType: TaskType): string {
  * @param taskType - The task type
  * @returns Object with network name, icon path, and action
  */
-export function getTaskSocialInfo(taskType: TaskType) {
+export function getTaskSocialInfo(taskType: TaskType | undefined) {
   const network = getSocialNetworkFromTaskType(taskType)
   const icon = getSocialNetworkIcon(network)
   const action = getActionFromTaskType(taskType)

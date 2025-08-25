@@ -7,7 +7,6 @@ import { EditIcon, DeleteIcon } from '@/components/Icons'
 import { getTaskSocialInfo } from '@/lib/taskUtils'
 import CreateTaskModal, { TaskFormData } from '@/components/modals/CreateTaskModal'
 import { convertToTimestamp } from '@/lib/dateUtils'
-import type { TaskType } from '@/types'
 
 export default function TasksTab() {
   const { tasks, createTask } = useTasks()
@@ -22,10 +21,7 @@ export default function TasksTab() {
     try {
       console.log('Creating task with form data:', data)
       console.log('Available task types:', taskTypes)
-      console.log('Selected task type from form:', data.type)
-      
-      // Usar o tipo selecionado diretamente do formulário
-      const taskType = data.type || 'DISCORD_TOWNHALL_PRESENCE' // fallback
+      console.log('Selected taskCategoryId from form:', data.taskCategoryId)
       
       // Criar a task via hook (que já faz refetch automático)
       const createTaskData = {
@@ -35,7 +31,7 @@ export default function TasksTab() {
         deadline: data.taskType === 'daily' 
           ? new Date().toISOString().slice(0, 19).replace('T', ' ') 
           : convertToTimestamp(data.deadline || ''), // Converter deadline brasileiro para formato MySQL
-        type: taskType as TaskType,
+        taskCategoryId: data.taskCategoryId,
         isDaily: data.taskType === 'daily', // Converter taskType para boolean
         link: data.link || '', // Link opcional da task
       }

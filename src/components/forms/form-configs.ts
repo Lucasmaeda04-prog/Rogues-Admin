@@ -1,27 +1,7 @@
 import { FormConfig } from './GenericForm'
 import { isValidBrazilianDate } from '@/lib/dateUtils'
+import type { TaskCategory } from '@/types'
 
-// Helper function to format task type labels
-function formatTaskTypeLabel(type: string): string {
-  // Handle specific mappings for better readability
-  const mappings: Record<string, string> = {
-    'TWITTER_LIKE': 'Twitter Like',
-    'TWITTER_COMMENT': 'Twitter Comment',
-    'TWITTER_RETWEET': 'Twitter Retweet',
-    'TWITTER_PFP': 'Twitter Profile Picture',
-    'DISCORD_TOWNHALL_PRESENCE': 'Discord Townhall Presence',
-    'CONNECT_DISCORD': 'Connect Discord',
-    'CONNECT_X': 'Connect X (Twitter)',
-  }
-
-  // Return custom mapping if exists, otherwise format automatically
-  if (mappings[type]) {
-    return mappings[type]
-  }
-
-  // Fallback: format automatically
-  return type.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
-}
 
 export const adminFormConfig: FormConfig = {
   title: 'Create Admin',
@@ -155,7 +135,7 @@ export const adminEditFormConfig: FormConfig = {
   ]
 }
 
-export function createTaskFormConfig(taskTypes: string[] = []): FormConfig {
+export function createTaskFormConfig(taskTypes: TaskCategory[] = []): FormConfig {
   return {
     title: 'Create Task',
     submitLabel: 'Save',
@@ -208,30 +188,25 @@ export function createTaskFormConfig(taskTypes: string[] = []): FormConfig {
     },
     {
       name: 'taskType',
-      label: 'Task Type',
+      label: 'Task Frequency',
       type: 'radio',
       required: true,
       options: [
         { value: 'daily', label: 'Daily Task - Can be completed every day' },
-        { value: 'one-time', label: 'One-time Task - Has a specific deadline' }
+        { value: 'one-time', label: 'One-time Task' }
       ],
-      description: 'Choose whether this task repeats daily or has a deadline'
+      description: 'Choose whether this task repeats daily or is a one-time task'
     },
     {
       name: 'deadline',
       label: 'Deadline',
       type: 'text',
       placeholder: '23/02/2024 - 18:00',
-      description: 'Format: DD/MM/YYYY - HH:MM (required for one-time tasks)',
+      description: 'Format: DD/MM/YYYY - HH:MM (optional for one-time tasks)',
       conditionalDisabled: (formData: Record<string, unknown>) => formData?.taskType === 'daily',
       validation: {
         custom: (value: unknown, formData?: Record<string, unknown>) => {
           if (typeof value !== 'string') return null
-          
-          // Se for one-time task, deadline é obrigatório
-          if (formData?.taskType === 'one-time' && (!value || value.trim() === '')) {
-            return 'Deadline is required for one-time tasks';
-          }
           
           // Se tem valor, validar formato
           if (value && value.trim() !== '') {
@@ -252,26 +227,27 @@ export function createTaskFormConfig(taskTypes: string[] = []): FormConfig {
       description: 'Optional: Link where users can complete the task'
     },
     {
-      name: 'type',
+      name: 'socialMedia',
+      label: 'Social Media Platform',
+      type: 'radio',
+      required: true,
+      options: [
+        { value: 'discord', label: 'Discord' },
+        { value: 'X', label: 'X (formerly Twitter)' }
+      ],
+      description: 'Select the platform where this task will be performed'
+    },
+    {
+      name: 'taskCategoryId',
       label: 'Task Type',
       type: 'select',
       required: true,
       placeholder: 'Select task type...',
       description: 'Choose the specific type of task from available options',
-      options: taskTypes.map(type => ({
-        value: type,
-        label: formatTaskTypeLabel(type)
+      options: taskTypes.map(taskCategory => ({
+        value: taskCategory.taskCategoryId,
+        label: taskCategory.action
       }))
-    },
-    {
-      name: 'socialMedia',
-      label: 'Social media',
-      type: 'radio',
-      required: true,
-      options: [
-        { value: 'discord', label: 'Discord' },
-        { value: 'X', label: 'X (late twitter)' }
-      ]
     }
   ]
   }

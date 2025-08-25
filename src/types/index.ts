@@ -39,6 +39,12 @@ export interface RegisterResponse {
 
 export type TaskType = 'TWITTER_LIKE' | 'TWITTER_COMMENT' | 'TWITTER_RETWEET' | 'TWITTER_PFP' | 'DISCORD_TOWNHALL_PRESENCE'
 
+export interface TaskCategory {
+  taskCategoryId: string
+  action: string
+  platform: string
+}
+
 export interface Task {
   taskId: string
   name: string
@@ -46,7 +52,7 @@ export interface Task {
   link: string | null
   points: number
   deadline: string
-  type: TaskType
+  type?: TaskType // Agora opcional, já que usamos taskCategoryId
   adminId: string
   createdAt: string
   updatedAt: string
@@ -61,8 +67,8 @@ export interface Task {
   }
 }
 
-export interface TaskTypesResponse {
-  types: Array<TaskType>
+export interface TaskCategoriesResponse {
+  categories: TaskCategory[]
 }
 
 export interface TasksResponse {
@@ -190,8 +196,8 @@ export interface CreateTaskData {
   description?: string
   link?: string
   points?: number
-  deadline: string
-  type: TaskType
+  deadline?: string
+  taskCategoryId: number
   isDaily?: boolean
 }
 

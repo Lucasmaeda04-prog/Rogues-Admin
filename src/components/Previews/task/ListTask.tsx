@@ -93,11 +93,13 @@ const TaskList: React.FC<TaskProps> = ({
             {/* Deadline badge */}
             {deadline && (
               <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ backgroundColor: '#C8C8C8' }}>
-                <DeadlineIcon 
-                  width={10} 
-                  height={10} 
-                  color="#000000"
-                  className="flex-shrink-0"
+  
+                <Image 
+                  src="/assets/clock.svg" 
+                  alt="Clock" 
+                  width={12}
+                  height={12}
+                  className="w-3 h-3"
                 />
                 <span className={cn("text-black text-xs max-sm:text-[10px] font-light", Campton.className)}>
                   Deadline: {formatDeadline(deadline)}

@@ -56,11 +56,22 @@ export function useTasks() {
   }
 }
 
-export function useTaskTypes() {
-  const { data: typesResponse, loading, error, refetch } = useApi(() => api.getTaskTypes())
+export function useTaskTypes(socialMedia?: string) {
+  // Map social media to platform
+  const platformMap: Record<string, string> = {
+    'discord': 'DISCORD',
+    'X': 'TWITTER'
+  };
+  
+  const targetPlatform = socialMedia ? platformMap[socialMedia] : undefined;
+  
+  const { data: categoriesResponse, loading, error, refetch } = useApi(
+    () => api.getTaskCategories(targetPlatform),
+    [targetPlatform]
+  )
 
   return {
-    taskTypes: typesResponse?.types || [],
+    taskTypes: categoriesResponse?.categories || [],
     loading,
     error,
     refreshTaskTypes: refetch
