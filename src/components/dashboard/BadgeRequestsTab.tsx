@@ -150,7 +150,7 @@ export default function BadgeRequestsTab() {
                 <tr key={request.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
                   <td className="px-4 py-3 text-sm text-gray-900">{request.User?.name || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900">{request.Badge?.name || '-'}</td>
+                  <td className="px-4 py-3 text-sm text-gray-900">{request.Badge?.title || '-'}</td>
                   <td className="px-4 py-3 text-sm">
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(request.status)}`}>
                       {getStatusLabel(request.status)}

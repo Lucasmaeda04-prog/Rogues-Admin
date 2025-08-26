@@ -22,7 +22,7 @@ export function useBadges() {
   const updateBadge = useCallback(async (id: string, badgeData: {
     title?: string
     description?: string
-    howToUnlock?: string
+    goal?: string
     image?: string
   }) => {
     try {

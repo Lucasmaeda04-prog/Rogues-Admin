@@ -216,7 +216,7 @@ export default function BadgeRequestActionModal({
                   ) : (
                     <>
                       <h3 className={cn("font-semibold text-gray-900", Campton.className)}>
-                        {badgeDetails?.name || request.Badge?.name || 'Badge não identificado'}
+                        {badgeDetails?.title || request.Badge?.title || 'Badge não identificado'}
                       </h3>
                       
                       {(badgeDetails?.description || request.Badge?.description) && (
@@ -230,14 +230,14 @@ export default function BadgeRequestActionModal({
                         </div>
                       )}
 
-                      {/* Show how to unlock from API data (priority) or fallback to request data */}
-                      {(badgeDetails?.howToUnlock || request.Badge?.howToUnlock) && (
+                      {/* Show goal from API data (priority) or fallback to request data */}
+                      {(badgeDetails?.goal || request.Badge?.goal) && (
                         <div>
                           <h4 className={cn("text-sm font-medium text-gray-700 mb-1", Campton.className)}>
-                            Como desbloquear:
+                            Objetivo:
                           </h4>
                           <p className={cn("text-gray-600", Campton.className)}>
-                            {badgeDetails?.howToUnlock || request.Badge?.howToUnlock}
+                            {badgeDetails?.goal || request.Badge?.goal}
                           </p>
                         </div>
                       )}

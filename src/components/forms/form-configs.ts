@@ -375,10 +375,10 @@ export const badgeFormConfig: FormConfig = {
       }
     },
     {
-      name: 'howToUnlock',
-      label: 'How to Unlock',
+      name: 'goal',
+      label: 'Goal',
       type: 'textarea',
-      placeholder: 'Explain how users can unlock this badge',
+      placeholder: 'Explain the goal to achieve this badge',
       required: true,
       validation: {
         minLength: 10,

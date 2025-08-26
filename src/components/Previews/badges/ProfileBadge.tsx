@@ -62,7 +62,7 @@ const ProfileBadge: React.FC<ProfileBadgeProps> = ({ badge }) => {
       <div className="w-20 h-24 relative group-hover:scale-105 transition-transform duration-300">
         <Image 
           src={badge.image}
-          alt={badge.name}
+          alt={badge.title}
           width={80}
           height={96}
           className={cn(
@@ -78,7 +78,7 @@ const ProfileBadge: React.FC<ProfileBadgeProps> = ({ badge }) => {
           "text-sm font-semibold leading-tight tracking-wide",
           badge.isUnlocked ? "text-emerald-200" : badge.isRequested ? "text-yellow-200" : "text-rose-200"
         )}>
-          {badge.name}
+          {badge.title}
         </span>
       </div>
 

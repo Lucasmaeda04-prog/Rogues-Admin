@@ -251,10 +251,9 @@ export class ApiClient {
       const blob = await imageResponse.blob();
       
       formData.append('image', blob, 'badge.jpg');
-      formData.append('name', data.title); // Use title value as name
       formData.append('title', data.title);
       formData.append('description', data.description || '');
-      formData.append('howToUnlock', data.howToUnlock);
+      formData.append('goal', data.goal);
 
       const url = `${this.baseUrl}/badge`
       const config = {
@@ -303,22 +302,14 @@ export class ApiClient {
     // Fallback to JSON for badges without images
     return this.request<CreateBadgeResponse>('/badge', {
       method: 'POST',
-      body: JSON.stringify({
-        ...data,
-        name: data.title // Use title value as name
-      }),
+      body: JSON.stringify(data),
     })
   }
 
   async updateBadge(id: string, data: Partial<CreateBadgeData>): Promise<{ message: string; badge: Badge }> {
-    const updateData: Record<string, unknown> = { ...data }
-    if (data.title) {
-      updateData.name = data.title // Use title value as name when updating
-    }
-    
     return this.request<{ message: string; badge: Badge }>(`/badge/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(updateData),
+      body: JSON.stringify(data),
     })
   }
 

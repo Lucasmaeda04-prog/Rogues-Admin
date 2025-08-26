@@ -90,10 +90,9 @@ export interface CreateTaskResponse {
 
 export interface Badge {
   badgeId: string
-  name: string
   title: string
   description: string | null
-  howToUnlock?: string
+  goal?: string
   image: string
   createdAt: string
   updatedAt: string
@@ -101,7 +100,7 @@ export interface Badge {
 
 export interface BadgeData {
   id: number;
-  name: string;
+  title: string;
   description: string;
   requirement: string;
   image: string;
@@ -123,9 +122,9 @@ export interface BadgeRequest {
   updatedAt: string
   Badge?: {
     badgeId: string
-    name: string
+    title: string
     description?: string
-    howToUnlock?: string
+    goal?: string
   }
   User?: {
     name: string
@@ -237,7 +236,7 @@ export interface CreateTaskData {
 export interface CreateBadgeData {
   title: string
   description?: string
-  howToUnlock: string
+  goal: string
   image?: string
 }
 

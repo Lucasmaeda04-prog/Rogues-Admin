@@ -52,7 +52,7 @@ export const BadgeModal: React.FC<BadgeModalProps> = ({
             <div className="relative mb-6">
               <Image 
                 src={badge.image}
-                alt={badge.name}
+                alt={badge.title}
                 width={96}
                 height={112}
                 className={cn(
@@ -102,7 +102,7 @@ export const BadgeModal: React.FC<BadgeModalProps> = ({
               "text-white text-2xl font-bold mb-2 text-center",
               Campton.className
             )}>
-              {badge.name}
+              {badge.title}
             </h2>
             
             <div className={cn(

@@ -20,7 +20,7 @@ interface CreateBadgeModalProps {
 export interface BadgeFormData {
   title: string;
   description: string;
-  howToUnlock: string;
+  goal: string;
   image: string;
 }
 
@@ -35,7 +35,7 @@ export default function CreateBadgeModal({
   const [formData, setFormData] = useState<BadgeFormData>({
     title: '',
     description: '',
-    howToUnlock: '',
+    goal: '',
     image: ''
   });
 
@@ -48,7 +48,7 @@ export default function CreateBadgeModal({
       setFormData({
         title: '',
         description: '',
-        howToUnlock: '',
+        goal: '',
         image: ''
       });
     }
@@ -75,7 +75,7 @@ export default function CreateBadgeModal({
     const badgeData: BadgeFormData = {
       title: typeof data.title === 'string' ? data.title : '',
       description: typeof data.description === 'string' ? data.description : '',
-      howToUnlock: typeof data.howToUnlock === 'string' ? data.howToUnlock : '',
+      goal: typeof data.goal === 'string' ? data.goal : '',
       image: typeof data.image === 'string' ? data.image : ''
     };
     
@@ -87,7 +87,7 @@ export default function CreateBadgeModal({
     const badgeData: BadgeFormData = {
       title: typeof data.title === 'string' ? data.title : '',
       description: typeof data.description === 'string' ? data.description : '',
-      howToUnlock: typeof data.howToUnlock === 'string' ? data.howToUnlock : '',
+      goal: typeof data.goal === 'string' ? data.goal : '',
       image: typeof data.image === 'string' ? data.image : ''
     };
     
@@ -97,9 +97,9 @@ export default function CreateBadgeModal({
   // Create preview data for ProfileBadge
   const previewBadgeData = {
     id: 999, // Preview ID
-    name: formData.title || 'Badge Title',
+    title: formData.title || 'Badge Title',
     description: formData.description || 'Badge description will appear here',
-    requirement: formData.howToUnlock || 'This is how you can unlock this badge',
+    requirement: formData.goal || 'This is the goal to achieve this badge',
     image: formData.image || '/assets/1f0370151ddcfa7a9e9c8817eaf92f77a581778b.png', // Default badge image
     isUnlocked: true, // Show as unlocked for better preview
     isRequested: false
