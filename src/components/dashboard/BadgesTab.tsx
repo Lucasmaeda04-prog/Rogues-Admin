@@ -5,41 +5,142 @@ import { useBadges } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
 import Image from 'next/image'
 import CreateBadgeModal, { BadgeFormData } from '@/components/modals/CreateBadgeModal'
+import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal'
+import { useToast } from '@/components/ui/ToastProvider'
 
 export default function BadgesTab() {
-  const { badges, createBadge } = useBadges()
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const { badges, createBadge, updateBadge, deleteBadge } = useBadges()
+  const { showSuccess, showError } = useToast()
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [editingBadge, setEditingBadge] = useState<BadgeFormData | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean
+    badgeId?: string
+    badgeName?: string
+  }>({ isOpen: false })
 
-  const handleCreateBadge = async (data: BadgeFormData) => {
-    console.log('Creating badge with form data:', data)
+  const handleSubmitBadge = async (data: BadgeFormData) => {
+    console.log(`${modalMode === 'edit' ? 'Updating' : 'Creating'} badge with form data:`, data)
     setIsLoading(true)
     
     try {
       // Convert BadgeFormData to CreateBadgeData
-      const createBadgeData = {
+      const badgeData = {
         title: data.title,
         description: data.description,
-        howToUnlock: data.howToUnlock,
+        goal: data.goal,
         image: data.image
       }
 
-      console.log('Sending to API:', createBadgeData)
-      const result = await createBadge(createBadgeData)
+      console.log('Sending to API:', badgeData)
+      
+      let result
+      if (modalMode === 'edit' && editingBadge) {
+        // Find the badge ID from the current editing badge
+        const badgeToEdit = badges.find(b => b.title === editingBadge.title)
+        if (badgeToEdit) {
+          result = await updateBadge(badgeToEdit.badgeId, badgeData)
+        } else {
+          throw new Error('Badge not found for editing')
+        }
+      } else {
+        result = await createBadge(badgeData)
+      }
       
       if (result.success) {
-        console.log('Badge created successfully')
-        setIsCreateModalOpen(false)
+        console.log(`Badge ${modalMode === 'edit' ? 'updated' : 'created'} successfully`)
+        showSuccess(
+          `Badge ${modalMode === 'edit' ? 'atualizada' : 'criada'}!`,
+          `Badge "${data.title}" foi ${modalMode === 'edit' ? 'atualizada' : 'criada'} com sucesso`
+        )
+        handleCloseModal()
       } else {
-        console.error('Error creating badge:', result.error)
-        alert(`Erro ao criar badge: ${result.error}`)
+        console.error(`Error ${modalMode === 'edit' ? 'updating' : 'creating'} badge:`, result.error)
+        showError(
+          `Erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} badge`,
+          result.error
+        )
       }
     } catch (error) {
       console.error('Unexpected error:', error)
-      alert('Erro inesperado ao criar badge')
+      showError(
+        `Erro inesperado`,
+        `Ocorreu um erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} a badge`
+      )
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleEditBadge = (badge: Record<string, unknown>) => {
+    const editData: BadgeFormData = {
+      title: badge.title as string,
+      description: (badge.description as string) || '',
+      goal: (badge.goal as string) || '',
+      image: (badge.image as string) || ''
+    }
+    
+    setEditingBadge(editData)
+    setModalMode('edit')
+    setIsModalOpen(true)
+  }
+
+  const handleDeleteClick = (badge: Record<string, unknown>) => {
+    setDeleteModal({
+      isOpen: true,
+      badgeId: badge.badgeId as string,
+      badgeName: badge.title as string
+    })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.badgeId) return
+    
+    setIsLoading(true)
+    
+    try {
+      const result = await deleteBadge(deleteModal.badgeId)
+      if (result.success) {
+        console.log('Badge deleted successfully')
+        showSuccess(
+          'Badge excluída!',
+          `Badge "${deleteModal.badgeName}" foi excluída com sucesso`
+        )
+        setDeleteModal({ isOpen: false })
+      } else {
+        console.error('Error deleting badge:', result.error)
+        showError(
+          'Erro ao excluir badge',
+          result.error
+        )
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error)
+      showError(
+        'Erro inesperado',
+        'Ocorreu um erro ao excluir a badge'
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false })
+  }
+
+  const handleOpenCreateModal = () => {
+    setEditingBadge(null)
+    setModalMode('create')
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingBadge(null)
+    setModalMode('create')
   }
 
   return (
@@ -57,7 +158,7 @@ export default function BadgesTab() {
           </div>
         </div>
         <button 
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={handleOpenCreateModal}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         >
           + Create Badge
@@ -70,9 +171,9 @@ export default function BadgesTab() {
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unlocks</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Creation</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -87,7 +188,7 @@ export default function BadgesTab() {
                         {badge.image ? (
                           <Image
                             src={badge.image}
-                            alt={badge.name}
+                            alt={badge.title}
                             width={48}
                             height={48}
                             className="w-full h-full object-cover"
@@ -97,17 +198,24 @@ export default function BadgesTab() {
                         )}
                     </div>
                 </td>
-                <td className="px-4 py-3 text-sm text-gray-900">{badge.name}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">{badge.description || 'N/A'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{badge.title}</td>
+                <td className="px-4 py-3 text-sm text-gray-900">{badge.description || 'N/A'}</td>
+                <td className="px-4 py-3 text-sm text-gray-900">{badge.goal || 'N/A'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">N/A</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{new Date(badge.createdAt).toLocaleDateString('pt-BR')}</td>
                 <td className="px-4 py-3 text-sm">
                   <div className="flex space-x-2">
-                    <button className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors">
+                    <button 
+                      onClick={() => handleEditBadge(badge as unknown as Record<string, unknown>)}
+                      className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
+                    >
                       <EditIcon width={16} height={16} />
                     </button>
-                    <button className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors">
+                    <button 
+                      onClick={() => handleDeleteClick(badge as unknown as Record<string, unknown>)}
+                      className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
+                      title="Delete badge"
+                    >
                       <DeleteIcon width={16} height={16} />
                     </button>
                   </div>
@@ -118,12 +226,27 @@ export default function BadgesTab() {
         </table>
       </div>
 
-      {/* Create Badge Modal */}
+      {/* Create/Edit Badge Modal */}
       <CreateBadgeModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateBadge}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmitBadge}
         isLoading={isLoading}
+        editData={editingBadge}
+        mode={modalMode}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Badge ?"
+        itemName={deleteModal.badgeName}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isLoading={isLoading}
+        loadingText="Deleting badge..."
       />
     </div>
   )

@@ -6,10 +6,12 @@ import GenericForm from '@/components/forms/GenericForm'
 import { adminFormConfig, adminEditFormConfig } from '@/components/forms/form-configs'
 import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
+import { useToast } from '@/components/ui/ToastProvider'
 
 export default function AdminsTab() {
   const { user } = useAuth()
   const { admins, createAdmin, updateAdmin, deleteAdmin } = useAdmins()
+  const { showSuccess, showError } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [editingAdmin, setEditingAdmin] = useState<Record<string, unknown> | null>(null)
   const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
@@ -23,7 +25,7 @@ export default function AdminsTab() {
     if (formMode === 'create') {
       // Validate password confirmation for new admins
       if (formData.password !== formData.confirmPassword) {
-        alert('Passwords do not match')
+        showError('Senhas não coincidem', 'As senhas digitadas não são iguais')
         return
       }
 
@@ -37,17 +39,17 @@ export default function AdminsTab() {
       })
 
       if (result.success) {
-        alert('Admin created successfully!')
+        showSuccess('Admin criado!', `Admin "${formData.adminName}" foi criado com sucesso`)
         handleResetForm()
       } else {
-        alert(`Error creating admin: ${result.error}`)
+        showError('Erro ao criar admin', result.error)
       }
       
       setIsLoading(false)
     } else if (formMode === 'edit') {
       // Validate password confirmation for edit mode if password is being changed
       if (formData.password && formData.password !== formData.confirmPassword) {
-        alert('Passwords do not match')
+        showError('Senhas não coincidem', 'As senhas digitadas não são iguais')
         return
       }
 
@@ -69,13 +71,13 @@ export default function AdminsTab() {
         const result = await updateAdmin(editingAdmin?.adminId as string, updateData)
         
         if (result.success) {
-          alert('Admin updated successfully!')
+          showSuccess('Admin atualizado!', `Admin "${formData.adminName}" foi atualizado com sucesso`)
           handleResetForm()
         } else {
-          alert(`Error updating admin: ${result.error}`)
+          showError('Erro ao atualizar admin', result.error)
         }
       } catch (error) {
-        alert(`Error updating admin: ${error}`)
+        showError('Erro inesperado', 'Ocorreu um erro ao atualizar o admin')
       }
       
       setIsLoading(false)
@@ -98,10 +100,10 @@ export default function AdminsTab() {
     const result = await deleteAdmin(deleteModal.adminId)
     
     if (result.success) {
-      alert(`Admin "${deleteModal.adminName}" deleted successfully!`)
+      showSuccess('Admin excluído!', `Admin "${deleteModal.adminName}" foi excluído com sucesso`)
       setDeleteModal({ isOpen: false })
     } else {
-      alert(`Error deleting admin: ${result.error}`)
+      showError('Erro ao excluir admin', result.error)
     }
     
     setIsLoading(false)

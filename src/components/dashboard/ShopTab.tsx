@@ -6,46 +6,86 @@ import { useShopItems } from '@/hooks'
 import { api } from '@/lib/api'
 import { CreateShopItemData } from '@/types'
 import CreateShopItemModal, { ShopItemFormData } from '@/components/modals/CreateShopItemModal'
+import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
+import { useToast } from '@/components/ui/ToastProvider'
 
 export default function ShopTab() {
-  const { items } = useShopItems()
+  const { items, updateItem, deleteItem } = useShopItems()
+  const { showSuccess, showError } = useToast()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [editingItem, setEditingItem] = useState<ShopItemFormData | null>(null)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean
+    itemId?: string
+    itemName?: string
+  }>({ isOpen: false })
 
-  const handleCreateItem = async (data: ShopItemFormData) => {
+  const handleSubmitItem = async (data: ShopItemFormData) => {
     setIsLoading(true)
     try {
-      // Transform ShopItemFormData to CreateShopItemData
-      const createData: CreateShopItemData = {
-        name: data.name,
-        description: data.description,
-        image: data.image,
-        price: data.price,
-        tag: data.tag,
-        categoryId: 1, // Default category, you may want to make this configurable
-        available: true,
-        quantity: data.quantity
-      }
+      if (modalMode === 'create') {
+        // Transform ShopItemFormData to CreateShopItemData
+        const createData: CreateShopItemData = {
+          name: data.name,
+          description: data.description,
+          image: data.image,
+          price: data.price,
+          tag: data.tag,
+          categoryId: 1, // Default category, you may want to make this configurable
+          available: true,
+          quantity: data.quantity
+        }
 
-      console.log('Creating shop item:', createData)
-      
-      // Make API call to create shop item
-      const response = await api.createShopItem(createData)
-      
-      console.log('Shop item created successfully:', response)
-      
-      handleCloseModal()
-      
-      // Optionally, you could refresh the items list here
-      // window.location.reload() or call a refresh function
-      
+        console.log('Creating shop item:', createData)
+        
+        // Make API call to create shop item
+        const response = await api.createShopItem(createData)
+        
+        console.log('Shop item created successfully:', response)
+        showSuccess(
+          'Item criado!',
+          `Item da loja "${data.name}" foi criado com sucesso`
+        )
+        handleCloseModal()
+      } else if (modalMode === 'edit') {
+        // Find the item being edited
+        const itemToEdit = items.find(item => item.name === editingItem?.name)
+        if (!itemToEdit) {
+          showError('Item não encontrado', 'Não foi possível localizar o item para edição')
+          return
+        }
+
+        const updateData = {
+          name: data.name,
+          description: data.description,
+          price: data.price,
+          imageUrl: data.image,
+          categoryId: 1 // You might want to make this dynamic
+        }
+
+        console.log('Updating shop item:', updateData)
+        
+        const result = await updateItem(itemToEdit.shopItemId, updateData)
+        
+        if (result.success) {
+          showSuccess(
+            'Item atualizado!',
+            `Item da loja "${data.name}" foi atualizado com sucesso`
+          )
+          handleCloseModal()
+        } else {
+          showError('Erro ao atualizar item', result.error)
+        }
+      }
     } catch (error) {
-      console.error('Error creating shop item:', error)
-      // Optionally show an error message to the user
-      alert('Error creating shop item: ' + (error as Error).message)
+      console.error('Error with shop item:', error)
+      showError(
+        'Erro inesperado',
+        `Ocorreu um erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} o item da loja`
+      )
     } finally {
       setIsLoading(false)
     }
@@ -65,6 +105,42 @@ export default function ShopTab() {
     setEditingItem(editData)
     setModalMode('edit')
     setIsModalOpen(true)
+  }
+
+  const handleDeleteClick = (item: Record<string, unknown>) => {
+    setDeleteModal({
+      isOpen: true,
+      itemId: item.shopItemId as string,
+      itemName: item.name as string
+    })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.itemId) return
+    
+    setIsLoading(true)
+    
+    try {
+      const result = await deleteItem(deleteModal.itemId)
+      if (result.success) {
+        showSuccess(
+          'Item excluído!',
+          `Item da loja "${deleteModal.itemName}" foi excluído com sucesso`
+        )
+        setDeleteModal({ isOpen: false })
+      } else {
+        showError('Erro ao excluir item', result.error)
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error)
+      showError('Erro inesperado', 'Ocorreu um erro ao excluir o item')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false })
   }
 
   const handleOpenCreateModal = () => {
@@ -147,7 +223,11 @@ export default function ShopTab() {
                     >
                       <EditIcon width={16} height={16} />
                     </button>
-                    <button className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors">
+                    <button 
+                      onClick={() => handleDeleteClick(item as unknown as Record<string, unknown>)}
+                      className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
+                      title="Delete item"
+                    >
                       <DeleteIcon width={16} height={16} />
                     </button>
                   </div>
@@ -161,10 +241,23 @@ export default function ShopTab() {
       <CreateShopItemModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onSubmit={handleCreateItem}
+        onSubmit={handleSubmitItem}
         isLoading={isLoading}
         editData={editingItem}
         mode={modalMode}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Shop Item ?"
+        itemName={deleteModal.itemName}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isLoading={isLoading}
+        loadingText="Deleting item..."
       />
     </div>
   )

@@ -7,10 +7,12 @@ import { EditIcon, DeleteIcon } from '@/components/Icons'
 import { getTaskSocialInfo } from '@/lib/taskUtils'
 import CreateTaskModal, { TaskFormData } from '@/components/modals/CreateTaskModal'
 import { convertToTimestamp } from '@/lib/dateUtils'
+import { useToast } from '@/components/ui/ToastProvider'
 
 export default function TasksTab() {
   const { tasks, createTask } = useTasks()
   const { taskTypes } = useTaskTypes()
+  const { showSuccess, showError } = useToast()
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -41,14 +43,24 @@ export default function TasksTab() {
       
       if (result.success) {
         console.log('Task created successfully')
+        showSuccess(
+          'Task criada!',
+          `Task "${data.title}" foi criada com sucesso`
+        )
         setIsCreateModalOpen(false)
       } else {
         console.error('Error creating task:', result.error)
-        alert(`Erro ao criar task: ${result.error}`)
+        showError(
+          'Erro ao criar task',
+          result.error
+        )
       }
     } catch (error) {
       console.error('Unexpected error:', error)
-      alert('Erro inesperado ao criar task')
+      showError(
+        'Erro inesperado',
+        'Ocorreu um erro ao criar a task'
+      )
     } finally {
       setIsLoading(false)
     }

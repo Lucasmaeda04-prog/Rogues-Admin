@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Campton } from "@/lib/fonts";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 
 import "./globals.css";
 
@@ -18,7 +19,9 @@ export default function RootLayout({
       <body
         className={`${Campton.className} ${Campton.className} antialiased`}
       >
-        {children}
+        <ToastProvider>
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
