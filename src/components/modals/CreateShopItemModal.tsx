@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn';
 import ShopCard from '@/components/Previews/shopCard';
 import GenericForm from '@/components/forms/GenericForm';
 import { shopItemFormConfig } from '@/components/forms/form-configs';
+import { useShopCategories } from '@/hooks/useShop';
 
 interface CreateShopItemModalProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export interface ShopItemFormData {
   price: number;
   quantity: number;
   tag: string;
-  category: string;
+  categoryId: number;
   image?: string;
 }
 
@@ -34,13 +35,14 @@ export default function CreateShopItemModal({
   editData = null,
   mode = 'create'
 }: CreateShopItemModalProps) {
+  const { categories } = useShopCategories()
   const [formData, setFormData] = useState<ShopItemFormData>({
     name: '',
     description: '',
     price: 0,
     quantity: 0,
     tag: '',
-    category: '',
+    categoryId: 0,
     image: ''
   });
 
@@ -55,7 +57,7 @@ export default function CreateShopItemModal({
         price: 0,
         quantity: 0,
         tag: '',
-        category: '',
+        categoryId: 0,
         image: ''
       });
     }
@@ -85,7 +87,7 @@ export default function CreateShopItemModal({
       price: typeof data.price === 'number' ? data.price : Number(data.price) || 0,
       quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
       tag: typeof data.tag === 'string' ? data.tag : '',
-      category: typeof data.category === 'string' ? data.category : '',
+      categoryId: typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 0,
       image: typeof data.image === 'string' ? data.image : ''
     };
     
@@ -100,7 +102,7 @@ export default function CreateShopItemModal({
       price: typeof data.price === 'number' ? data.price : Number(data.price) || 0,
       quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
       tag: typeof data.tag === 'string' ? data.tag : '',
-      category: typeof data.category === 'string' ? data.category : '',
+      categoryId: typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 0,
       image: typeof data.image === 'string' ? data.image : ''
     };
     
@@ -109,6 +111,12 @@ export default function CreateShopItemModal({
 
   const getDefaultImage = () => {
     return '/assets/1f0370151ddcfa7a9e9c8817eaf92f77a581778b.png';
+  };
+
+  const getCategoryName = (categoryId: number) => {
+    if (!categoryId) return 'Category';
+    const category = categories.find(cat => cat.shopItemCategoryId === categoryId);
+    return category ? category.name : 'Category';
   };
 
   return (
@@ -167,7 +175,7 @@ export default function CreateShopItemModal({
                 title={formData.name || 'Item Name'}
                 description={formData.description || 'Item description will appear here'}
                 price={formData.price || 0}
-                category={formData.category || 'Category'}
+                category={getCategoryName(formData.categoryId)}
                 stock={formData.quantity || 0}
                 imageUrl={formData.image || getDefaultImage()}
                 tag={formData.tag || undefined}

@@ -65,6 +65,14 @@ export class ApiClient {
       throw new Error(errorMessage)
     }
 
+    // Handle empty responses (204 No Content, etc.)
+    const contentLength = response.headers.get('content-length')
+    const contentType = response.headers.get('content-type')
+    
+    if (response.status === 204 || contentLength === '0' || !contentType?.includes('application/json')) {
+      return {} as T
+    }
+
     return response.json()
   }
 
@@ -208,13 +216,13 @@ export class ApiClient {
     return this.request<void>(`/shop/item/${id}`, { method: 'DELETE' })
   }
 
-  // Shop categories endpoints
+  // Shop category endpoints
   async getShopCategories(): Promise<ShopCategory[]> {
-    return this.request<ShopCategory[]>('/shop-item-categories')
+    return this.request<ShopCategory[]>('/shop/item-category')
   }
 
   async createShopCategory(data: CreateShopCategoryData): Promise<{ message: string; shopItemCategory: ShopCategory }> {
-    return this.request<{ message: string; shopItemCategory: ShopCategory }>('/shop-item-categories', {
+    return this.request<{ message: string; shopItemCategory: ShopCategory }>('/shop/item-category', {
       method: 'POST',
       body: JSON.stringify(data),
     })

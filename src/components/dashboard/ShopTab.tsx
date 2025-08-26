@@ -34,7 +34,7 @@ export default function ShopTab() {
           image: data.image,
           price: data.price,
           tag: data.tag,
-          categoryId: 1, // Default category, you may want to make this configurable
+          categoryId: Number(data.categoryId) || 1,
           available: true,
           quantity: data.quantity
         }
@@ -63,7 +63,7 @@ export default function ShopTab() {
           description: data.description,
           price: data.price,
           imageUrl: data.image,
-          categoryId: 1 // You might want to make this dynamic
+          categoryId: Number(data.categoryId) || 1
         }
 
         console.log('Updating shop item:', updateData)
@@ -98,7 +98,7 @@ export default function ShopTab() {
       price: item.price as number,
       quantity: item.quantity as number,
       tag: (item.tag as string) || '',
-      category: (item.categoryName as string) || '',
+      categoryId: (item.categoryId as number) || 1,
       image: (item.image as string) || ''
     }
     

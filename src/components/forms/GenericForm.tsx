@@ -5,11 +5,12 @@ import { Campton } from '@/lib/fonts'
 import { cn } from '@/lib/cn'
 import CustomSelect from './CustomSelect'
 import ImageUpload from '../ui/ImageUpload'
+import { CategorySelector } from './CategorySelector'
 
 export interface FormField {
   name: string
   label: string
-  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'checkbox' | 'select' | 'radio' | 'image-upload'
+  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'checkbox' | 'select' | 'radio' | 'image-upload' | 'category-selector'
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -262,6 +263,17 @@ export default function GenericForm({
           />
         )
 
+      case 'category-selector':
+        return (
+          <CategorySelector
+            value={formData[field.name] as string | number}
+            onChange={(value) => handleChange(field.name, value)}
+            error={errors[field.name]}
+            label={field.label}
+            required={field.required}
+          />
+        )
+
       case 'number':
         return (
           <input
@@ -300,7 +312,7 @@ export default function GenericForm({
 
   const renderSingleField = (field: FormField, groupWidth?: string) => (
     <div key={field.name} className={cn("space-y-3", groupWidth)}>
-      {field.type !== 'checkbox' && (
+      {field.type !== 'checkbox' && field.type !== 'category-selector' && (
         <label htmlFor={field.name} className={cn(
           "block text-[#4b4b4b] text-[18px] font-medium",
           Campton.className

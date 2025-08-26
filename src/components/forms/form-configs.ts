@@ -329,17 +329,12 @@ export const shopItemFormConfig: FormConfig = {
       }
     },
     {
-      name: 'category',
+      name: 'categoryId',
       label: 'Category',
-      type: 'text',
-      placeholder: 'Enter category',
+      type: 'category-selector',
       required: true,
       group: 'tag-category',
-      groupWidth: 'flex-1',
-      validation: {
-        minLength: 1,
-        maxLength: 50
-      }
+      groupWidth: 'flex-1'
     },
     {
       name: 'image',
