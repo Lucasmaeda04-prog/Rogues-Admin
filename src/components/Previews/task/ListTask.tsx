@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn';
 import { useState } from 'react';
 import Image from 'next/image';
 import { Button } from '@/components/Button';
-import { IconConfirmed, IconDiscord, DailyTaskIcon, OneTimeTaskIcon, DeadlineIcon } from '@/components/Icons';
+import { IconConfirmed, IconDiscord, DailyTaskIcon, OneTimeTaskIcon } from '@/components/Icons';
 import { Campton } from '@/lib/fonts';
 import { formatDeadline } from '@/lib/taskUtils';
 

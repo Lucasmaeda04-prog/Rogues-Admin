@@ -1,7 +1,7 @@
 import type { 
   User, LoginResponse, RegisterResponse, GetAdminsResponse,
   Task, TasksResponse, TaskCategoriesResponse, CreateTaskResponse,
-  Badge, CreateBadgeResponse,
+  Badge, CreateBadgeResponse, BadgeRequest, BadgeRequestResponseData,
   ShopItem, ShopCategory, StockMovement,
   CreateTaskData, CreateBadgeData, CreateShopItemData, CreateShopCategoryData, CreateStockMovementData, CreateAdminData
 } from '@/types'
@@ -237,6 +237,10 @@ export class ApiClient {
     return this.request<Badge[]>('/badge')
   }
 
+  async getBadgeById(badgeId: string): Promise<Badge> {
+    return this.request<Badge>(`/badge/${badgeId}`)
+  }
+
   async createBadge(data: CreateBadgeData): Promise<CreateBadgeResponse> {
     // If there's an image file, use FormData instead of JSON
     if (data.image && data.image.startsWith('data:')) {
@@ -247,6 +251,7 @@ export class ApiClient {
       const blob = await imageResponse.blob();
       
       formData.append('image', blob, 'badge.jpg');
+      formData.append('name', data.title); // Use title value as name
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('howToUnlock', data.howToUnlock);
@@ -298,14 +303,22 @@ export class ApiClient {
     // Fallback to JSON for badges without images
     return this.request<CreateBadgeResponse>('/badge', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        ...data,
+        name: data.title // Use title value as name
+      }),
     })
   }
 
   async updateBadge(id: string, data: Partial<CreateBadgeData>): Promise<{ message: string; badge: Badge }> {
+    const updateData: Record<string, unknown> = { ...data }
+    if (data.title) {
+      updateData.name = data.title // Use title value as name when updating
+    }
+    
     return this.request<{ message: string; badge: Badge }>(`/badge/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: JSON.stringify(updateData),
     })
   }
 
@@ -316,6 +329,22 @@ export class ApiClient {
   async assignBadge(badgeId: string, userId: string): Promise<{ message: string }> {
     return this.request<{ message: string }>(`/badge/assign/badgeId/${badgeId}/userId/${userId}`, {
       method: 'POST',
+    })
+  }
+
+  // Badge request endpoints
+  async getBadgeRequests(): Promise<BadgeRequest[]> {
+    return this.request<BadgeRequest[]>('/badge-request')
+  }
+
+  async getBadgeRequestsByUser(userId: string): Promise<BadgeRequest[]> {
+    return this.request<BadgeRequest[]>(`/badge-request/user/${userId}`)
+  }
+
+  async respondToBadgeRequest(data: BadgeRequestResponseData): Promise<{ message: string; badgeRequest: BadgeRequest }> {
+    return this.request<{ message: string; badgeRequest: BadgeRequest }>('/badge-request/response', {
+      method: 'POST',
+      body: JSON.stringify(data),
     })
   }
 

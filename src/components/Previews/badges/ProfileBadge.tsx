@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/cn';
 import { BadgeData } from '@/types';
+import Image from 'next/image';
 
 interface ProfileBadgeProps {
   badge: BadgeData;
@@ -59,9 +60,11 @@ const ProfileBadge: React.FC<ProfileBadgeProps> = ({ badge }) => {
       
       {/* Badge image */}
       <div className="w-20 h-24 relative group-hover:scale-105 transition-transform duration-300">
-        <img 
+        <Image 
           src={badge.image}
           alt={badge.name}
+          width={80}
+          height={96}
           className={cn(
             "w-full h-full object-contain transition-all duration-300",
             !badge.isUnlocked && "grayscale opacity-50"

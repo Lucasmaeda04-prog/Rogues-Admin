@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { api } from '@/lib/api'
 import { useApi } from './useApi'
-import type { ShopCategory, StockMovement, CreateShopCategoryData, CreateStockMovementData } from '@/types'
+import type { CreateShopCategoryData, CreateStockMovementData } from '@/types'
 
 export function useShopItems() {
   const { data, loading, error, refetch } = useApi(() => api.getShopItems())

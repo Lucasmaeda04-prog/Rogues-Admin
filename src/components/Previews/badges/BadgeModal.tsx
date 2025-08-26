@@ -1,11 +1,11 @@
 'use client';
 
 import { Button } from '@/components/Button';
-import { Modal } from '@/components/modals/Modal';
 import { cn } from '@/lib/cn';
 import { Campton } from '@/lib/fonts';
 import { BadgeData } from '@/types';
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface BadgeModalProps {
   isOpen: boolean;
@@ -15,7 +15,6 @@ interface BadgeModalProps {
 }
 
 export const BadgeModal: React.FC<BadgeModalProps> = ({
-  isOpen,
   onClose,
   badge,
   onRequestBadge,
@@ -51,9 +50,11 @@ export const BadgeModal: React.FC<BadgeModalProps> = ({
           <div className="relative bg-gradient-to-b from-[#2a1c2f] to-[#1a1c1f] p-8 flex flex-col items-center">
             {/* Badge Image */}
             <div className="relative mb-6">
-              <img 
+              <Image 
                 src={badge.image}
                 alt={badge.name}
+                width={96}
+                height={112}
                 className={cn(
                   "w-24 h-28 object-contain transition-all duration-300",
                   !badge.isUnlocked && "grayscale opacity-50"
@@ -256,7 +257,7 @@ export const BadgeModal: React.FC<BadgeModalProps> = ({
                   "text-white/60 text-sm",
                   Campton.className
                 )}>
-                  Your badge request has been submitted and is being reviewed by our team. You'll be notified once it's processed.
+                  Your badge request has been submitted and is being reviewed by our team. You&apos;ll be notified once it&apos;s processed.
                 </p>
               </div>
             )}

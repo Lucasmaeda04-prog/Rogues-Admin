@@ -86,7 +86,7 @@ export default function CreateTaskModal({
         taskCategoryId: taskTypes?.[0]?.taskCategoryId || 0
       });
     }
-  }, [editData, mode]); // Remove taskTypes dependency - it was causing the reset!
+  }, [editData, mode, taskTypes]);
 
   // Transform verification steps for preview
   const getVerificationStepsArray = useCallback(() => {
@@ -133,7 +133,7 @@ export default function CreateTaskModal({
       link: typeof data.link === 'string' ? data.link : '',
       socialMedia: (typeof data.socialMedia === 'string' && (data.socialMedia === 'discord' || data.socialMedia === 'X')) ? data.socialMedia : 'discord',
       taskType: (typeof data.taskType === 'string' && (data.taskType === 'daily' || data.taskType === 'one-time')) ? data.taskType : 'one-time',
-      taskCategoryId: typeof data.taskCategoryId === 'number' ? data.taskCategoryId : Number(data.taskCategoryId) || formData.taskCategoryId
+      taskCategoryId: typeof data.taskCategoryId === 'number' ? data.taskCategoryId : Number(data.taskCategoryId) || 0
     };
     
     // Update local state for preview in real-time

@@ -205,7 +205,7 @@ export function createTaskFormConfig(taskTypes: TaskCategory[] = []): FormConfig
       description: 'Format: DD/MM/YYYY - HH:MM (optional for one-time tasks)',
       conditionalDisabled: (formData: Record<string, unknown>) => formData?.taskType === 'daily',
       validation: {
-        custom: (value: unknown, formData?: Record<string, unknown>) => {
+        custom: (value: unknown) => {
           if (typeof value !== 'string') return null
           
           // Se tem valor, validar formato

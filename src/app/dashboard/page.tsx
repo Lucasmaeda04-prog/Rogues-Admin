@@ -6,8 +6,9 @@ import AdminsTab from '@/components/dashboard/AdminsTab'
 import TasksTab from '@/components/dashboard/TasksTab'
 import ShopTab from '@/components/dashboard/ShopTab'
 import BadgesTab from '@/components/dashboard/BadgesTab'
+import BadgeRequestsTab from '@/components/dashboard/BadgeRequestsTab'
 
-type ActiveTab = 'Admins' | 'Tasks' | 'Shop' | 'Badges'
+type ActiveTab = 'Admins' | 'Tasks' | 'Shop' | 'Badges' | 'Badge Requests'
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('Admins')
@@ -23,6 +24,8 @@ export default function AdminDashboard() {
         return <ShopTab />
       case 'Badges':
         return <BadgesTab />
+      case 'Badge Requests':
+        return <BadgeRequestsTab />
       default:
         return <AdminsTab />
     }
@@ -45,7 +48,7 @@ export default function AdminDashboard() {
           </div>
           
           <nav className="flex space-x-8">
-            {(['Admins', 'Tasks', 'Shop', 'Badges'] as ActiveTab[]).map((tab) => (
+            {(['Admins', 'Tasks', 'Shop', 'Badges', 'Badge Requests'] as ActiveTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}

@@ -40,7 +40,7 @@ export interface RegisterResponse {
 export type TaskType = 'TWITTER_LIKE' | 'TWITTER_COMMENT' | 'TWITTER_RETWEET' | 'TWITTER_PFP' | 'DISCORD_TOWNHALL_PRESENCE'
 
 export interface TaskCategory {
-  taskCategoryId: string
+  taskCategoryId: number
   action: string
   platform: string
 }
@@ -93,6 +93,7 @@ export interface Badge {
   name: string
   title: string
   description: string | null
+  howToUnlock?: string
   image: string
   createdAt: string
   updatedAt: string
@@ -112,6 +113,38 @@ export interface BadgeData {
 export interface CreateBadgeResponse {
   message: string
   badge: Badge
+}
+
+export interface BadgeRequest {
+  id: string
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'ACCEPTED'
+  message?: string
+  createdAt: string
+  updatedAt: string
+  Badge?: {
+    badgeId: string
+    name: string
+    description?: string
+    howToUnlock?: string
+  }
+  User?: {
+    name: string
+    UserRole?: unknown
+  }
+  Admin?: {
+    email: string
+    name: string
+  }
+}
+
+export interface BadgeRequestsResponse {
+  badgeRequests?: BadgeRequest[]
+}
+
+export interface BadgeRequestResponseData {
+  badgeRequestId: string
+  status: 'APPROVED' | 'REJECTED'
+  adminNote?: string
 }
 
 // =============================================================================
