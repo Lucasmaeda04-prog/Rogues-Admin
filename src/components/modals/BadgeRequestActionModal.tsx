@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Campton } from '@/lib/fonts';
 import { cn } from '@/lib/cn';
 import { api } from '@/lib/api';
+import { useToast } from '@/components/ui/ToastProvider';
 import type { BadgeRequest, Badge } from '@/types';
 
 interface BadgeRequestActionModalProps {
@@ -26,6 +27,7 @@ export default function BadgeRequestActionModal({
   const [processing, setProcessing] = useState<'approve' | 'reject' | null>(null);
   const [badgeDetails, setBadgeDetails] = useState<Badge | null>(null);
   const [loadingBadge, setLoadingBadge] = useState(false);
+  const { showError } = useToast();
 
   useEffect(() => {
     if (isOpen) {
@@ -46,6 +48,7 @@ export default function BadgeRequestActionModal({
           setBadgeDetails(badge);
         } catch (error) {
           console.error('Failed to fetch badge details:', error);
+          showError('Erro ao carregar badge', 'Não foi possível carregar os detalhes da badge');
           setBadgeDetails(null);
         } finally {
           setLoadingBadge(false);
@@ -78,10 +81,10 @@ export default function BadgeRequestActionModal({
       if (result.success) {
         onClose();
       } else {
-        alert(`Erro ao aprovar: ${result.error}`);
+        showError('Erro ao aprovar', result.error || 'Falha ao aprovar solicitação');
       }
     } catch {
-      alert('Erro inesperado ao aprovar solicitação');
+      showError('Erro inesperado', 'Ocorreu um erro ao aprovar a solicitação');
     } finally {
       setProcessing(null);
     }
@@ -96,10 +99,10 @@ export default function BadgeRequestActionModal({
       if (result.success) {
         onClose();
       } else {
-        alert(`Erro ao rejeitar: ${result.error}`);
+        showError('Erro ao rejeitar', result.error || 'Falha ao rejeitar solicitação');
       }
     } catch {
-      alert('Erro inesperado ao rejeitar solicitação');
+      showError('Erro inesperado', 'Ocorreu um erro ao rejeitar a solicitação');
     } finally {
       setProcessing(null);
     }

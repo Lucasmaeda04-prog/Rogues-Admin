@@ -141,8 +141,8 @@ export interface BadgeRequestsResponse {
 }
 
 export interface BadgeRequestResponseData {
-  badgeRequestId: string
-  status: 'APPROVED' | 'REJECTED'
+  id: string
+  status: 'ACCEPTED' | 'REJECTED'
   adminNote?: string
 }
 

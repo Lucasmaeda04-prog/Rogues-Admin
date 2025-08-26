@@ -6,52 +6,68 @@ import { useTasks, useTaskTypes } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
 import { getTaskSocialInfo } from '@/lib/taskUtils'
 import CreateTaskModal, { TaskFormData } from '@/components/modals/CreateTaskModal'
+import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal'
 import { convertToTimestamp } from '@/lib/dateUtils'
 import { useToast } from '@/components/ui/ToastProvider'
 
 export default function TasksTab() {
-  const { tasks, createTask } = useTasks()
+  const { tasks, createTask, updateTask, deleteTask } = useTasks()
   const { taskTypes } = useTaskTypes()
   const { showSuccess, showError } = useToast()
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [editingTask, setEditingTask] = useState<TaskFormData | null>(null)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean
+    taskId?: string
+    taskName?: string
+  }>({ isOpen: false })
 
-  const handleCreateTask = async (data: TaskFormData) => {
-    console.log('Creating task with form data:', data)
+  const handleSubmitTask = async (data: TaskFormData) => {
+    console.log(`${modalMode === 'edit' ? 'Updating' : 'Creating'} task with form data:`, data)
     setIsLoading(true)
     
     try {
-      console.log('Creating task with form data:', data)
-      console.log('Available task types:', taskTypes)
-      console.log('Selected taskCategoryId from form:', data.taskCategoryId)
-      
-      // Criar a task via hook (que já faz refetch automático)
-      const createTaskData = {
+      // Preparar dados da task para API
+      const taskData = {
         name: data.title,
         description: data.description,
         points: data.rewards,
         deadline: data.taskType === 'daily' 
           ? new Date().toISOString().slice(0, 19).replace('T', ' ') 
-          : convertToTimestamp(data.deadline || ''), // Converter deadline brasileiro para formato MySQL
+          : convertToTimestamp(data.deadline || ''),
         taskCategoryId: data.taskCategoryId,
-        isDaily: data.taskType === 'daily', // Converter taskType para boolean
-        link: data.link || '', // Link opcional da task
+        isDaily: data.taskType === 'daily',
+        link: data.link || '',
       }
 
-      console.log('Sending to API:', createTaskData)
-      const result = await createTask(createTaskData)
+      console.log('Sending to API:', taskData)
+      
+      let result
+      if (modalMode === 'edit' && editingTask) {
+        // Encontrar o ID da task sendo editada
+        const taskToEdit = tasks.find(t => t.name === editingTask.title)
+        if (taskToEdit) {
+          result = await updateTask(taskToEdit.taskId, taskData)
+        } else {
+          throw new Error('Task not found for editing')
+        }
+      } else {
+        result = await createTask(taskData)
+      }
       
       if (result.success) {
-        console.log('Task created successfully')
+        console.log(`Task ${modalMode === 'edit' ? 'updated' : 'created'} successfully`)
         showSuccess(
-          'Task criada!',
-          `Task "${data.title}" foi criada com sucesso`
+          `Task ${modalMode === 'edit' ? 'atualizada' : 'criada'}!`,
+          `Task "${data.title}" foi ${modalMode === 'edit' ? 'atualizada' : 'criada'} com sucesso`
         )
-        setIsCreateModalOpen(false)
+        handleCloseModal()
       } else {
-        console.error('Error creating task:', result.error)
+        console.error(`Error ${modalMode === 'edit' ? 'updating' : 'creating'} task:`, result.error)
         showError(
-          'Erro ao criar task',
+          `Erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} task`,
           result.error
         )
       }
@@ -59,11 +75,85 @@ export default function TasksTab() {
       console.error('Unexpected error:', error)
       showError(
         'Erro inesperado',
-        'Ocorreu um erro ao criar a task'
+        `Ocorreu um erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} a task`
       )
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleEditTask = (task: Record<string, unknown>) => {
+    // Converter dados da task para TaskFormData
+    const editData: TaskFormData = {
+      title: task.name as string,
+      description: (task.description as string) || '',
+      rewards: task.points as number,
+      taskType: task.isDaily ? 'daily' : 'one-time',
+      deadline: task.isDaily ? '' : new Date(task.deadline as string).toLocaleDateString('pt-BR'),
+      taskCategoryId: task.taskCategoryId as number,
+      socialMedia: task.type as string, // Manter a rede social original
+      link: (task.link as string) || ''
+    }
+    
+    setEditingTask(editData)
+    setModalMode('edit')
+    setIsModalOpen(true)
+  }
+
+  const handleDeleteClick = (task: Record<string, unknown>) => {
+    setDeleteModal({
+      isOpen: true,
+      taskId: task.taskId as string,
+      taskName: task.name as string
+    })
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteModal.taskId) return
+    
+    setIsLoading(true)
+    
+    try {
+      const result = await deleteTask(deleteModal.taskId)
+      if (result.success) {
+        console.log('Task deleted successfully')
+        showSuccess(
+          'Task excluída!',
+          `Task "${deleteModal.taskName}" foi excluída com sucesso`
+        )
+        setDeleteModal({ isOpen: false })
+      } else {
+        console.error('Error deleting task:', result.error)
+        showError(
+          'Erro ao excluir task',
+          result.error
+        )
+      }
+    } catch (error) {
+      console.error('Unexpected error:', error)
+      showError(
+        'Erro inesperado',
+        'Ocorreu um erro ao excluir a task'
+      )
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteModal({ isOpen: false })
+  }
+
+  const handleOpenCreateModal = () => {
+    setEditingTask(null)
+    setModalMode('create')
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setEditingTask(null)
+    setModalMode('create')
   }
 
   return (
@@ -81,7 +171,7 @@ export default function TasksTab() {
           </div>
         </div>
         <button 
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={handleOpenCreateModal}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
         >
           + Create Task
@@ -141,10 +231,18 @@ export default function TasksTab() {
                   <td className="px-4 py-3 text-sm text-gray-900">{task.admin?.name || task.admin?.email || 'N/A'}</td>
                   <td className="px-4 py-3 text-sm">
                     <div className="flex space-x-2">
-                      <button className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors">
+                      <button 
+                        onClick={() => handleEditTask(task as unknown as Record<string, unknown>)}
+                        className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
+                        title="Edit task"
+                      >
                         <EditIcon width={16} height={16} />
                       </button>
-                      <button className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors">
+                      <button 
+                        onClick={() => handleDeleteClick(task as unknown as Record<string, unknown>)}
+                        className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
+                        title="Delete task"
+                      >
                         <DeleteIcon width={16} height={16} />
                       </button>
                     </div>
@@ -156,13 +254,27 @@ export default function TasksTab() {
         </table>
       </div>
 
-      {/* Create Task Modal */}
+      {/* Create/Edit Task Modal */}
       <CreateTaskModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSubmit={handleCreateTask}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmitTask}
         isLoading={isLoading}
-        mode="create"
+        editData={editingTask}
+        mode={modalMode}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModal.isOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Task ?"
+        itemName={deleteModal.taskName}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        isLoading={isLoading}
+        loadingText="Deleting task..."
       />
     </div>
   )

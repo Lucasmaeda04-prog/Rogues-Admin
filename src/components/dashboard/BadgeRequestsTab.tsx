@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import { useBadgeRequests } from '@/hooks'
 import BadgeRequestActionModal from '@/components/modals/BadgeRequestActionModal'
+import { useToast } from '@/components/ui/ToastProvider'
 import type { BadgeRequest } from '@/types'
 
 export default function BadgeRequestsTab() {
   const { badgeRequests, loading, error, approveRequest, rejectRequest } = useBadgeRequests()
+  const { showSuccess, showError } = useToast()
   const [processingRequest, setProcessingRequest] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<BadgeRequest | null>(null)
@@ -27,14 +29,15 @@ export default function BadgeRequestsTab() {
       const result = await approveRequest(badgeRequestId)
       if (result.success) {
         console.log('Badge request approved successfully')
+        showSuccess('Solicitação aprovada!', 'A solicitação de badge foi aprovada com sucesso')
       } else {
         console.error('Error approving badge request:', result.error)
-        alert(`Erro ao aprovar solicitação: ${result.error}`)
+        showError('Erro ao aprovar', result.error || 'Falha ao aprovar solicitação')
       }
       return result
     } catch (error) {
       console.error('Unexpected error:', error)
-      alert('Erro inesperado ao aprovar solicitação')
+      showError('Erro inesperado', 'Ocorreu um erro ao aprovar a solicitação')
       return { success: false, error: 'Erro inesperado' }
     } finally {
       setProcessingRequest(null)
@@ -47,14 +50,15 @@ export default function BadgeRequestsTab() {
       const result = await rejectRequest(badgeRequestId)
       if (result.success) {
         console.log('Badge request rejected successfully')
+        showSuccess('Solicitação rejeitada!', 'A solicitação de badge foi rejeitada com sucesso')
       } else {
         console.error('Error rejecting badge request:', result.error)
-        alert(`Erro ao rejeitar solicitação: ${result.error}`)
+        showError('Erro ao rejeitar', result.error || 'Falha ao rejeitar solicitação')
       }
       return result
     } catch (error) {
       console.error('Unexpected error:', error)
-      alert('Erro inesperado ao rejeitar solicitação')
+      showError('Erro inesperado', 'Ocorreu um erro ao rejeitar a solicitação')
       return { success: false, error: 'Erro inesperado' }
     } finally {
       setProcessingRequest(null)

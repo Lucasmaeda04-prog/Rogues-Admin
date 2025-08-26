@@ -8,9 +8,35 @@ export function useBadgeRequests() {
 
   const respondToRequest = useCallback(async (requestData: BadgeRequestResponseData) => {
     try {
-      await api.respondToBadgeRequest(requestData)
+      const response = await api.respondToBadgeRequest(requestData)
+      console.log('Badge request response:', response) // Debug log
       await refetch()
-      return { success: true }
+      
+      // Check if response is empty (common with 204 No Content responses)
+      if (!response || Object.keys(response).length === 0) {
+        console.log('Empty response received - operation likely successful')
+        return { 
+          success: true, 
+          data: null,
+          id: requestData.id
+        }
+      }
+      
+      // Check if badgeRequest exists in response
+      if (!response.badgeRequest) {
+        console.warn('Badge request response missing badgeRequest field:', response)
+        return { 
+          success: true, 
+          data: null,
+          id: requestData.id // Fallback to original request ID
+        }
+      }
+      
+      return { 
+        success: true, 
+        data: response.badgeRequest,
+        id: response.badgeRequest.id || requestData.id // Fallback to request ID if response ID is missing
+      }
     } catch (err) {
       return { 
         success: false, 
@@ -21,15 +47,15 @@ export function useBadgeRequests() {
 
   const approveRequest = useCallback(async (badgeRequestId: string, adminNote?: string) => {
     return respondToRequest({
-      badgeRequestId,
-      status: 'APPROVED',
+      id: badgeRequestId,
+      status: 'ACCEPTED',
       adminNote
     })
   }, [respondToRequest])
 
   const rejectRequest = useCallback(async (badgeRequestId: string, adminNote?: string) => {
     return respondToRequest({
-      badgeRequestId,
+      id: badgeRequestId,
       status: 'REJECTED',
       adminNote
     })

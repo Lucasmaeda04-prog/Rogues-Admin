@@ -56,24 +56,29 @@ export default function CreateTaskModal({
   useEffect(() => {
     if (taskTypes && taskTypes.length > 0) {
       setFormData(prev => {
-        // Only update if current taskCategoryId is not valid for the current taskTypes
+        // Only update taskCategoryId if current one is not valid for the current taskTypes
         const validIds = taskTypes.map(t => t.taskCategoryId);
         if (!prev.taskCategoryId || !validIds.includes(prev.taskCategoryId)) {
           return {
-            ...prev,
+            ...prev, // Preserve all other form data
             taskCategoryId: taskTypes[0]?.taskCategoryId || 0
           };
         }
-        return prev;
+        return prev; // Return unchanged if current taskCategoryId is valid
       });
     }
   }, [taskTypes]);
 
-  // Update form data when editData changes
+  // Update form data when editData or mode changes (not when taskTypes changes)
   useEffect(() => {
     if (editData && mode === 'edit') {
       setFormData(editData);
-    } else if (mode === 'create') {
+    }
+  }, [editData, mode]);
+
+  // Reset form data when modal opens in create mode
+  useEffect(() => {
+    if (isOpen && mode === 'create' && !editData) {
       setFormData({
         title: '',
         description: '',
@@ -83,10 +88,10 @@ export default function CreateTaskModal({
         link: '',
         socialMedia: 'discord',
         taskType: 'one-time',
-        taskCategoryId: taskTypes?.[0]?.taskCategoryId || 0
+        taskCategoryId: 0
       });
     }
-  }, [editData, mode, taskTypes]);
+  }, [isOpen, mode, editData]);
 
   // Transform verification steps for preview
   const getVerificationStepsArray = useCallback(() => {
