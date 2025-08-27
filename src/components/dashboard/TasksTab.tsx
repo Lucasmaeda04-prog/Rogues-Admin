@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from 'react'
 import Image from 'next/image'
+import { ArrowUpDown } from 'lucide-react'
 import { useTasks, useTaskPlatforms, useTaskTypes } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
-import { getTaskSocialInfo, getTaskCategoryInfo } from '@/lib/taskUtils'
+import { getTaskCategoryInfo } from '@/lib/taskUtils'
 import CreateTaskModal, { TaskFormData } from '@/components/modals/CreateTaskModal'
 import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal'
 import { convertToTimestamp } from '@/lib/dateUtils'
@@ -17,6 +18,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export default function TasksTab() {
   const { tasks, createTask, updateTask, deleteTask } = useTasks()
@@ -33,11 +43,18 @@ export default function TasksTab() {
     taskName?: string
   }>({ isOpen: false })
   
-  // Filters state
+  // Filters and sorting state
   const [filters, setFilters] = useState({
     socialMedia: 'all',
     taskType: 'all',
-    author: 'all'
+    author: 'all',
+    dateFrom: '',
+    dateTo: ''
+  })
+  
+  const [sorting, setSorting] = useState({
+    field: 'createdAt',
+    order: 'desc' as 'asc' | 'desc'
   })
 
   const handleSubmitTask = async (data: TaskFormData) => {
@@ -184,7 +201,7 @@ export default function TasksTab() {
     } else if (taskCategories && taskCategories.length > 0) {
       // Use task categories platforms as fallback
       socialMediaOptions = [...new Set(taskCategories.map(category => 
-        category.plataform?.toLowerCase() || 'unknown'
+        category.platform?.toLowerCase() || 'unknown'
       ).filter(platform => platform !== 'unknown'))]
     } else {
       // Final fallback to existing tasks platforms
@@ -204,11 +221,12 @@ export default function TasksTab() {
     }
   }, [platforms, taskCategories, tasks])
 
-  // Filter tasks based on current filters
-  const filteredTasks = useMemo(() => {
-    return tasks.filter(task => {
+  // Filter and sort tasks based on current filters and sorting
+  const filteredAndSortedTasks = useMemo(() => {
+    const filtered = tasks.filter(task => {
       const categoryInfo = getTaskCategoryInfo(task.taskCategoryId, taskCategories)
       const author = task.admin?.name || task.admin?.email || 'Unknown'
+      const createdDate = new Date(task.createdAt)
       
       const socialMatch = filters.socialMedia === 'all' || categoryInfo.network === filters.socialMedia
       const typeMatch = filters.taskType === 'all' || 
@@ -216,9 +234,46 @@ export default function TasksTab() {
         (filters.taskType === 'one-time' && !task.isDaily)
       const authorMatch = filters.author === 'all' || author === filters.author
       
-      return socialMatch && typeMatch && authorMatch
+      // Date filters
+      const dateFromMatch = !filters.dateFrom || createdDate >= new Date(filters.dateFrom)
+      const dateToMatch = !filters.dateTo || createdDate <= new Date(filters.dateTo + 'T23:59:59')
+      
+      return socialMatch && typeMatch && authorMatch && dateFromMatch && dateToMatch
     })
-  }, [tasks, filters, taskCategories])
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      let aValue: string | number, bValue: string | number
+      
+      switch (sorting.field) {
+        case 'completions':
+          aValue = a._count?.taskCompletions || 0
+          bValue = b._count?.taskCompletions || 0
+          break
+        case 'createdAt':
+          aValue = new Date(a.createdAt).getTime()
+          bValue = new Date(b.createdAt).getTime()
+          break
+        case 'name':
+          aValue = a.name.toLowerCase()
+          bValue = b.name.toLowerCase()
+          break
+        case 'points':
+          aValue = a.points
+          bValue = b.points
+          break
+        default:
+          aValue = a.createdAt
+          bValue = b.createdAt
+      }
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sorting.order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
+      }
+      
+      return sorting.order === 'asc' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number)
+    })
+  }, [tasks, filters, taskCategories, sorting])
 
   const handleFilterChange = (filterType: keyof typeof filters, value: string) => {
     setFilters(prev => ({
@@ -231,8 +286,22 @@ export default function TasksTab() {
     setFilters({
       socialMedia: 'all',
       taskType: 'all',
-      author: 'all'
+      author: 'all',
+      dateFrom: '',
+      dateTo: ''
     })
+  }
+  
+  const handleSortChange = (field: string) => {
+    setSorting(prev => ({
+      field,
+      order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+  
+  const getSortIcon = (field: string) => {
+    if (sorting.field !== field) return <ArrowUpDown className="w-4 h-4 opacity-50" />
+    return <ArrowUpDown className={`w-4 h-4 ${sorting.order === 'asc' ? 'rotate-180' : ''}`} />
   }
 
   // Truncate link function
@@ -246,60 +315,93 @@ export default function TasksTab() {
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-4">
           <h2 className="text-lg font-semibold text-gray-900">
-            All tasks models ({filteredTasks.length})
+            All tasks models ({filteredAndSortedTasks.length})
           </h2>
-          <div className="flex space-x-2">
-            <select 
-              className="border border-gray-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={filters.socialMedia}
-              onChange={(e) => handleFilterChange('socialMedia', e.target.value)}
-            >
-              <option value="all">All Social Media</option>
-              {filterOptions.socialMedia.map(platform => (
-                <option key={platform} value={platform}>
-                  {platform === 'twitter' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1)}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-wrap gap-2">
+            <Select value={filters.socialMedia} onValueChange={(value) => handleFilterChange('socialMedia', value)}>
+              <SelectTrigger className="w-[180px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow" style={{borderColor: 'rgba(148, 145, 145, 1)'}}>
+                <SelectValue placeholder="All Social Media" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Social Media</SelectItem>
+                {filterOptions.socialMedia.map(platform => (
+                  <SelectItem key={platform} value={platform}>
+                    {platform === 'twitter' ? 'X (Twitter)' : platform.charAt(0).toUpperCase() + platform.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             
-            <select 
-              className="border border-gray-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={filters.taskType}
-              onChange={(e) => handleFilterChange('taskType', e.target.value)}
-            >
-              <option value="all">All Types</option>
-              <option value="daily">Daily</option>
-              <option value="one-time">One-time</option>
-            </select>
+            <Select value={filters.taskType} onValueChange={(value) => handleFilterChange('taskType', value)}>
+              <SelectTrigger className="w-[140px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow" style={{borderColor: 'rgba(148, 145, 145, 1)'}}>
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="one-time">One-time</SelectItem>
+              </SelectContent>
+            </Select>
             
-            <select 
-              className="border border-gray-300 rounded px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={filters.author}
-              onChange={(e) => handleFilterChange('author', e.target.value)}
-            >
-              <option value="all">All Authors</option>
-              {filterOptions.authors.map(author => (
-                <option key={author} value={author}>{author}</option>
-              ))}
-            </select>
+            <Select value={filters.author} onValueChange={(value) => handleFilterChange('author', value)}>
+              <SelectTrigger className="w-[150px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow" style={{borderColor: 'rgba(148, 145, 145, 1)'}}>
+                <SelectValue placeholder="All Authors" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Authors</SelectItem>
+                {filterOptions.authors.map(author => (
+                  <SelectItem key={author} value={author}>{author}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             
-            {(filters.socialMedia !== 'all' || filters.taskType !== 'all' || filters.author !== 'all') && (
-              <button
+            <Input
+              type="date"
+              placeholder="From date"
+              value={filters.dateFrom}
+              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+              className="w-[150px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow"
+              style={{borderColor: 'rgba(148, 145, 145, 1)'}}
+            />
+            
+            <Input
+              type="date"
+              placeholder="To date"
+              value={filters.dateTo}
+              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+              className="w-[150px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow"
+              style={{borderColor: 'rgba(148, 145, 145, 1)'}}
+            />
+            
+            {(filters.socialMedia !== 'all' || filters.taskType !== 'all' || filters.author !== 'all' || filters.dateFrom || filters.dateTo) && (
+              <Button
+                variant="ghost"
                 onClick={resetFilters}
-                className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                title="Clear all filters"
+                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 shadow-md rounded-xl font-light hover:shadow-lg transition-all"
               >
                 Clear Filters
-              </button>
+              </Button>
             )}
           </div>
         </div>
-        <button 
-          onClick={handleOpenCreateModal}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        <Button 
+          onClick={handleOpenCreateModal} 
+          className="shadow-md rounded-xl font-semibold hover:shadow-lg transition-all"
+          style={{
+            backgroundColor: '#1e40af',
+            color: 'white'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#1e3a8a'
+            e.currentTarget.style.color = 'white'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#1e40af'
+            e.currentTarget.style.color = 'white'
+          }}
         >
           + Create Task
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg shadow border">
@@ -307,29 +409,45 @@ export default function TasksTab() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-16">ID</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>
+                <Button variant="ghost" className="h-auto p-0 font-light shadow-sm rounded-lg hover:shadow-md transition-all" onClick={() => handleSortChange('name')}>
+                  Name {getSortIcon('name')}
+                </Button>
+              </TableHead>
               <TableHead className="w-20">Social</TableHead>
               <TableHead>Action Type</TableHead>
               <TableHead>Description</TableHead>
               <TableHead className="w-24">Task Type</TableHead>
-              <TableHead className="w-24">Reward</TableHead>
+              <TableHead>
+                <Button variant="ghost" className="h-auto p-0 font-light shadow-sm rounded-lg hover:shadow-md transition-all" onClick={() => handleSortChange('points')}>
+                  Reward {getSortIcon('points')}
+                </Button>
+              </TableHead>
               <TableHead className="w-32">Deadline</TableHead>
-              <TableHead className="w-20">Completions</TableHead>
+              <TableHead>
+                <Button variant="ghost" className="h-auto p-0 font-light shadow-sm rounded-lg hover:shadow-md transition-all" onClick={() => handleSortChange('completions')}>
+                  Completions {getSortIcon('completions')}
+                </Button>
+              </TableHead>
               <TableHead className="w-48">Link</TableHead>
-              <TableHead className="w-24">Created</TableHead>
+              <TableHead>
+                <Button variant="ghost" className="h-auto p-0 font-light shadow-sm rounded-lg hover:shadow-md transition-all" onClick={() => handleSortChange('createdAt')}>
+                  Created {getSortIcon('createdAt')}
+                </Button>
+              </TableHead>
               <TableHead>Author</TableHead>
               <TableHead className="w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTasks.length === 0 ? (
+            {filteredAndSortedTasks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={13} className="h-24 text-center text-gray-500">
                   {tasks.length === 0 ? 'No tasks found' : 'No tasks match the current filters'}
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTasks.map((task, index) => {
+              filteredAndSortedTasks.map((task, index) => {
                 const categoryInfo = getTaskCategoryInfo(task.taskCategoryId, taskCategories)
                 
                 return (

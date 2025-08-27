@@ -53,6 +53,7 @@ export interface Task {
   points: number
   deadline: string
   type?: TaskType // Agora opcional, já que usamos taskCategoryId
+  taskCategoryId: number // ID da categoria da task
   adminId: string
   createdAt: string
   updatedAt: string

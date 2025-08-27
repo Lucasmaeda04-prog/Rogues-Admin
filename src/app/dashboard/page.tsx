@@ -37,7 +37,7 @@ export default function AdminDashboard() {
       <div className="bg-white border-b border-gray-200">
         <div className="px-6">
           <div className="flex items-center justify-between py-4">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-xl font-semibold text-gray-900">
               Welcome, {user?.name || user?.email || 'Admin'}!
             </h1>
             {user?.isSuper && (

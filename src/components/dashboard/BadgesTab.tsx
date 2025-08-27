@@ -1,12 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
+import { ArrowUpDown } from 'lucide-react'
 import { useBadges } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
 import Image from 'next/image'
 import CreateBadgeModal, { BadgeFormData } from '@/components/modals/CreateBadgeModal'
 import DeleteConfirmationModal from '@/components/ui/DeleteConfirmationModal'
 import { useToast } from '@/components/ui/ToastProvider'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+// Select components not used in badges, only date filters
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 export default function BadgesTab() {
   const { badges, createBadge, updateBadge, deleteBadge } = useBadges()
@@ -20,6 +32,17 @@ export default function BadgesTab() {
     badgeId?: string
     badgeName?: string
   }>({ isOpen: false })
+  
+  // Filters and sorting state
+  const [filters, setFilters] = useState({
+    dateFrom: '',
+    dateTo: ''
+  })
+  
+  const [sorting, setSorting] = useState({
+    field: 'createdAt',
+    order: 'desc' as 'asc' | 'desc'
+  })
 
   const handleSubmitBadge = async (data: BadgeFormData) => {
     console.log(`${modalMode === 'edit' ? 'Updating' : 'Creating'} badge with form data:`, data)
@@ -143,48 +166,181 @@ export default function BadgesTab() {
     setModalMode('create')
   }
 
+  // Filter and sort badges
+  const filteredAndSortedBadges = useMemo(() => {
+    const filtered = badges.filter(badge => {
+      const createdDate = new Date(badge.createdAt)
+      
+      // Date filters
+      const dateFromMatch = !filters.dateFrom || createdDate >= new Date(filters.dateFrom)
+      const dateToMatch = !filters.dateTo || createdDate <= new Date(filters.dateTo + 'T23:59:59')
+      
+      return dateFromMatch && dateToMatch
+    })
+    
+    // Apply sorting
+    return filtered.sort((a, b) => {
+      let aValue: string | number, bValue: string | number
+      
+      switch (sorting.field) {
+        case 'title':
+          aValue = a.title.toLowerCase()
+          bValue = b.title.toLowerCase()
+          break
+        case 'unlocks':
+          // Mock unlock count - in real implementation this would come from backend
+          aValue = Math.floor(Math.random() * 100) // Random number for demo
+          bValue = Math.floor(Math.random() * 100)
+          break
+        case 'createdAt':
+          aValue = new Date(a.createdAt).getTime()
+          bValue = new Date(b.createdAt).getTime()
+          break
+        default:
+          aValue = a.createdAt
+          bValue = b.createdAt
+      }
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sorting.order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
+      }
+      
+      return sorting.order === 'asc' ? (aValue as number) - (bValue as number) : (bValue as number) - (aValue as number)
+    })
+  }, [badges, filters, sorting])
+
+  const handleFilterChange = (filterType: keyof typeof filters, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterType]: value
+    }))
+  }
+
+  const resetFilters = () => {
+    setFilters({
+      dateFrom: '',
+      dateTo: ''
+    })
+  }
+  
+  const handleSortChange = (field: string) => {
+    setSorting(prev => ({
+      field,
+      order: prev.field === field && prev.order === 'asc' ? 'desc' : 'asc'
+    }))
+  }
+  
+  const getSortIcon = (field: string) => {
+    if (sorting.field !== field) return <ArrowUpDown className="w-4 h-4 opacity-50" />
+    return <ArrowUpDown className={`w-4 h-4 ${sorting.order === 'asc' ? 'rotate-180' : ''}`} />
+  }
+  
+  // Mock function to get unlock count - in real app this would come from backend
+  const getUnlockCount = (badgeId: string) => {
+    // Generate consistent mock number based on badge ID
+    const seed = badgeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return Math.floor((seed % 100) + 1) // Consistent number between 1-100
+  }
+
   return (
     <div className="animate-fadeIn">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-semibold text-gray-900">All badges models</h2>
-          <div className="flex space-x-2">
-            <select className="border border-gray-300 rounded px-3 py-1 text-sm">
-              <option>Action</option>
-            </select>
-            <select className="border border-gray-300 rounded px-3 py-1 text-sm">
-              <option>Actions</option>
-            </select>
+          <h2 className="text-lg font-semibold text-gray-900">
+            All badges models ({filteredAndSortedBadges.length})
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            <Input
+              type="date"
+              placeholder="From date"
+              value={filters.dateFrom}
+              onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+              className="w-[150px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow"
+              style={{borderColor: 'rgba(148, 145, 145, 1)'}}
+            />
+            
+            <Input
+              type="date"
+              placeholder="To date"
+              value={filters.dateTo}
+              onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+              className="w-[150px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow"
+              style={{borderColor: 'rgba(148, 145, 145, 1)'}}
+            />
+            
+            {(filters.dateFrom || filters.dateTo) && (
+              <Button
+                variant="ghost"
+                onClick={resetFilters}
+                className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 shadow-md rounded-xl font-light hover:shadow-lg transition-all"
+              >
+                Clear Filters
+              </Button>
+            )}
           </div>
         </div>
-        <button 
-          onClick={handleOpenCreateModal}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        <Button 
+          onClick={handleOpenCreateModal} 
+          className="shadow-md rounded-xl font-semibold hover:shadow-lg transition-all"
+          style={{
+            backgroundColor: '#1e40af',
+            color: 'white'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#1e3a8a'
+            e.currentTarget.style.color = 'white'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#1e40af'
+            e.currentTarget.style.color = 'white'
+          }}
         >
           + Create Badge
-        </button>
+        </Button>
       </div>
 
-      <div className="bg-white rounded-lg shadow border overflow-hidden">
-        <table className="min-w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Goal</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unlocks</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Creation</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {badges.map((badge, index) => (
-              <tr key={badge.badgeId} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
-                <td className="px-4 py-3 text-sm">
-                   <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
+      <div className="bg-white rounded-lg shadow border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-16">ID</TableHead>
+              <TableHead className="w-20">Image</TableHead>
+              <TableHead>
+                <Button variant="ghost" className="h-auto p-0 font-light shadow-sm rounded-lg hover:shadow-md transition-all" onClick={() => handleSortChange('title')}>
+                  Title {getSortIcon('title')}
+                </Button>
+              </TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead>Goal</TableHead>
+              <TableHead>
+                <Button variant="ghost" className="h-auto p-0 font-light shadow-sm rounded-lg hover:shadow-md transition-all" onClick={() => handleSortChange('unlocks')}>
+                  Unlocks {getSortIcon('unlocks')}
+                </Button>
+              </TableHead>
+              <TableHead>
+                <Button variant="ghost" className="h-auto p-0 font-light shadow-sm rounded-lg hover:shadow-md transition-all" onClick={() => handleSortChange('createdAt')}>
+                  Created {getSortIcon('createdAt')}
+                </Button>
+              </TableHead>
+              <TableHead className="w-24">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSortedBadges.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center text-gray-500">
+                  {badges.length === 0 ? 'No badges found' : 'No badges match the current filters'}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredAndSortedBadges.map((badge, index) => {
+                const unlockCount = getUnlockCount(badge.badgeId)
+                
+                return (
+                  <TableRow key={badge.badgeId}>
+                    <TableCell className="font-medium">#{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
                         {badge.image ? (
                           <Image
                             src={badge.image}
@@ -196,34 +352,41 @@ export default function BadgesTab() {
                         ) : (
                           <span className="text-xs">🏆</span>
                         )}
-                    </div>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-900">{badge.title}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">{badge.description || 'N/A'}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">{badge.goal || 'N/A'}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">N/A</td>
-                <td className="px-4 py-3 text-sm text-gray-900">{new Date(badge.createdAt).toLocaleDateString('pt-BR')}</td>
-                <td className="px-4 py-3 text-sm">
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={() => handleEditBadge(badge as unknown as Record<string, unknown>)}
-                      className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
-                    >
-                      <EditIcon width={16} height={16} />
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteClick(badge as unknown as Record<string, unknown>)}
-                      className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
-                      title="Delete badge"
-                    >
-                      <DeleteIcon width={16} height={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      </div>
+                    </TableCell>
+                    <TableCell>{badge.title}</TableCell>
+                    <TableCell>{badge.description || 'N/A'}</TableCell>
+                    <TableCell>{badge.goal || 'N/A'}</TableCell>
+                    <TableCell>
+                      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                        {unlockCount} unlocks
+                      </span>
+                    </TableCell>
+                    <TableCell>{new Date(badge.createdAt).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => handleEditBadge(badge as unknown as Record<string, unknown>)}
+                          className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
+                          title="Edit badge"
+                        >
+                          <EditIcon width={16} height={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteClick(badge as unknown as Record<string, unknown>)}
+                          className="p-1 text-red-600 hover:text-red-900 hover:bg-red-50 rounded transition-colors"
+                          title="Delete badge"
+                        >
+                          <DeleteIcon width={16} height={16} />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Create/Edit Badge Modal */}
