@@ -71,6 +71,10 @@ export interface TaskCategoriesResponse {
   categories: TaskCategory[]
 }
 
+export interface TaskPlatformsResponse {
+  values: string[]
+}
+
 export interface TasksResponse {
   tasks: Task[]
 }

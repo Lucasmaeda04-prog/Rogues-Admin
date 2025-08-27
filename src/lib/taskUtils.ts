@@ -98,3 +98,44 @@ export function isDeadlinePassed(deadline: string | Date): boolean {
   const date = typeof deadline === 'string' ? new Date(deadline) : deadline;
   return date.getTime() < Date.now();
 }
+
+/**
+ * Gets task category info by taskCategoryId
+ * @param taskCategoryId - The task category ID
+ * @param categories - Array of task categories from backend
+ * @returns Object with platform, action, and display info
+ */
+export function getTaskCategoryInfo(taskCategoryId: number, categories: any[]) {
+  const category = categories.find(cat => cat.taskCategoryId === taskCategoryId);
+  
+  if (!category) {
+    return {
+      platform: 'unknown',
+      action: 'unknown',
+      network: 'unknown',
+      icon: '/assets/X.svg',
+      displayName: 'Unknown',
+      actionDisplay: 'Unknown Action'
+    };
+  }
+
+  const platform = category.plataform?.toLowerCase() || 'unknown';
+  const network = platform === 'twitter' ? 'twitter' : platform;
+  const icon = getSocialNetworkIcon(network);
+  const displayName = network === 'twitter' ? 'X' : network.charAt(0).toUpperCase() + network.slice(1);
+  
+  // Format action for display
+  const actionDisplay = category.action
+    ?.toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Unknown Action';
+
+  return {
+    platform,
+    action: category.action?.toLowerCase() || 'unknown',
+    network,
+    icon,
+    displayName,
+    actionDisplay
+  };
+}

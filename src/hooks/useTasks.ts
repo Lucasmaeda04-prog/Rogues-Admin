@@ -77,3 +77,16 @@ export function useTaskTypes(socialMedia?: string) {
     refreshTaskTypes: refetch
   }
 }
+
+export function useTaskPlatforms() {
+  const { data: platformsResponse, loading, error, refetch } = useApi(
+    () => api.getTaskPlatforms()
+  )
+
+  return {
+    platforms: platformsResponse?.values || [],
+    loading,
+    error,
+    refreshPlatforms: refetch
+  }
+}

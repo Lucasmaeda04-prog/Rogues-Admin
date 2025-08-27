@@ -25,7 +25,7 @@ export interface TaskFormData {
   rewards: number;
   deadline?: string;
   link?: string;
-  socialMedia: 'discord' | 'X';
+  socialMedia: string;
   taskType: 'daily' | 'one-time';
   taskCategoryId: number; // ID da categoria da task selecionada
 }
@@ -167,7 +167,7 @@ export default function CreateTaskModal({
     description: formData.description || 'Log in with Discord. Click at your profile and connect your profile with discord',
     rewards: formData.rewards || 40,
     verificationSteps: getVerificationStepsArray(),
-    socialMedia: formData.socialMedia,
+    socialMedia: (formData.socialMedia === 'discord' || formData.socialMedia === 'X') ? formData.socialMedia as 'discord' | 'X' : 'discord' as 'discord' | 'X',
     deadline: formData.deadline
   };
 
@@ -177,7 +177,7 @@ export default function CreateTaskModal({
     description: formData.description || 'Log in with Discord. Click at your profile and connect your profile with discord',
     rewards: formData.rewards || 40,
     initialState: 'claim' as const,
-    socialMedia: formData.socialMedia,
+    socialMedia: (formData.socialMedia === 'discord' || formData.socialMedia === 'X') ? formData.socialMedia as 'discord' | 'X' : 'discord' as 'discord' | 'X',
     deadline: (formData.taskType === 'daily' || !formData.deadline) ? undefined : formData.deadline, // Só mostra deadline se não for daily E tiver deadline
     isDaily: formData.taskType === 'daily'
   };

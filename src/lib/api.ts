@@ -1,6 +1,6 @@
 import type { 
   User, LoginResponse, RegisterResponse, GetAdminsResponse,
-  Task, TasksResponse, TaskCategoriesResponse, CreateTaskResponse,
+  Task, TasksResponse, TaskCategoriesResponse, TaskPlatformsResponse, CreateTaskResponse,
   Badge, CreateBadgeResponse, BadgeRequest, BadgeRequestResponseData,
   ShopItem, ShopCategory, StockMovement,
   CreateTaskData, CreateBadgeData, CreateShopItemData, CreateShopCategoryData, CreateStockMovementData, CreateAdminData
@@ -111,6 +111,10 @@ export class ApiClient {
   async getTaskCategories(plataform?: string): Promise<TaskCategoriesResponse> {
     const queryParam = plataform ? `?plataform=${plataform}` : ''
     return this.request<TaskCategoriesResponse>(`/task/categories${queryParam}`)
+  }
+
+  async getTaskPlatforms(): Promise<TaskPlatformsResponse> {
+    return this.request<TaskPlatformsResponse>('/task/plataforms')
   }
 
   async createTask(data: CreateTaskData): Promise<CreateTaskResponse> {

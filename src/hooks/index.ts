@@ -1,7 +1,7 @@
 // Export all custom hooks for easy imports
 export { useApi } from './useApi'
 export { useAuth, useAdmins } from './useAuth'
-export { useTasks, useTaskTypes } from './useTasks'
+export { useTasks, useTaskTypes, useTaskPlatforms } from './useTasks'
 export { useShopItems, useShopCategories, useStockMovements } from './useShop'
 export { useBadges } from './useBadges'
 export { useBadgeRequests } from './useBadgeRequests'
