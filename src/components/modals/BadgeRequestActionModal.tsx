@@ -5,6 +5,16 @@ import { Campton } from '@/lib/fonts';
 import { cn } from '@/lib/cn';
 import { api } from '@/lib/api';
 import { useToast } from '@/components/ui/ToastProvider';
+import { 
+  File as FileIcon,
+  FileImage,
+  FileText,
+  FileVideo,
+  FileAudio,
+  FileArchive,
+  FileSpreadsheet,
+  FileCode
+} from 'lucide-react'
 import type { BadgeRequest, Badge } from '@/types';
 
 interface BadgeRequestActionModalProps {
@@ -57,7 +67,7 @@ export default function BadgeRequestActionModal({
     };
 
     fetchBadgeDetails();
-  }, [isOpen, request?.Badge?.badgeId]);
+  }, [isOpen, request?.Badge?.badgeId, showError]);
 
   // Clear badge details when modal closes
   useEffect(() => {
@@ -146,6 +156,33 @@ export default function BadgeRequestActionModal({
   };
 
   if (!isOpen || !request) return null;
+
+  const resolveFileUrl = (url: string) => {
+    if (!url) return '#'
+    if (/^https?:\/\//i.test(url)) return url
+    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`
+  }
+
+  const attachments = Array.isArray(request.Document?.DocumentAttachment)
+    ? request.Document?.DocumentAttachment
+    : []
+
+  const getAttachmentIcon = (mime: string, filename?: string) => {
+    const type = (mime || '').toLowerCase()
+    const ext = (filename || '').split('.').pop()?.toLowerCase()
+    const className = 'w-5 h-5 mr-2 flex-shrink-0'
+
+    if (type.startsWith('image/')) return <FileImage className={`${className} text-pink-500`} />
+    if (type === 'application/pdf' || ext === 'pdf') return <FileText className={`${className} text-red-600`} />
+    if (type.startsWith('video/')) return <FileVideo className={`${className} text-purple-600`} />
+    if (type.startsWith('audio/')) return <FileAudio className={`${className} text-emerald-600`} />
+    if (type.includes('sheet') || type.includes('excel') || ['xls','xlsx','csv'].includes(ext || '')) return <FileSpreadsheet className={`${className} text-green-600`} />
+    if (type.includes('word') || ['doc','docx','rtf','odt','md','txt'].includes(ext || '') || type.startsWith('text/')) return <FileText className={`${className} text-blue-600`} />
+    if (['zip','rar','7z','tar','gz'].includes(ext || '') || type.includes('zip') || type.includes('compressed') || type.includes('tar')) return <FileArchive className={`${className} text-amber-600`} />
+    if (['json','js','ts','tsx','jsx'].includes(ext || '') || type.includes('json')) return <FileCode className={`${className} text-slate-600`} />
+    return <FileIcon className={`${className} text-gray-500`} />
+  }
 
   return (
     <div className="fixed inset-0 z-50">
@@ -248,6 +285,47 @@ export default function BadgeRequestActionModal({
                   )}
                 </div>
               </div>
+
+              {/* Attachments */}
+              {attachments.length > 0 && (
+                <div>
+                  <label className={cn("block text-sm font-medium text-gray-700 mb-2", Campton.className)}>
+                    Anexos ({attachments.length})
+                  </label>
+                  <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                    {attachments.map((att, idx) => (
+                      <div key={`${att.filename}-${idx}`} className="flex items-center justify-between">
+                        <div className="flex items-center min-w-0">
+                          {getAttachmentIcon(att.mimeType, att.filename)}
+                          <div className="min-w-0">
+                            <p className={cn("text-gray-900 truncate", Campton.className)} title={att.filename}>
+                              {att.filename}
+                            </p>
+                            <p className="text-xs text-gray-500">{att.mimeType}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={resolveFileUrl(att.fileUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
+                          >
+                            Visualizar
+                          </a>
+                          <a
+                            href={resolveFileUrl(att.fileUrl)}
+                            download={att.filename}
+                            className="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                          >
+                            Baixar
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Request Message */}
               {request.message && (

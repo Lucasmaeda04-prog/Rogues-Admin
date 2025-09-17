@@ -56,7 +56,7 @@ export function CategorySelector({ value, onChange, error, label, required }: Ca
         showError('Erro ao criar categoria', result.error || 'Falha ao criar categoria')
         setIsCreating(false)
       }
-    } catch (error) {
+    } catch {
       showError('Erro inesperado', 'Ocorreu um erro ao criar a categoria')
       setIsCreating(false)
     }

@@ -73,6 +73,7 @@ export default function TasksTab() {
         taskCategoryId: data.taskCategoryId,
         isDaily: data.taskType === 'daily',
         link: data.link || '',
+        verificationSteps: data.verificationSteps || ''
       }
 
       console.log('Sending to API:', taskData)
@@ -116,16 +117,19 @@ export default function TasksTab() {
   }
 
   const handleEditTask = (task: Record<string, unknown>) => {
+    // Derive social media from task category
+    const categoryInfo = getTaskCategoryInfo(task.taskCategoryId as number, taskCategories)
+    const socialMediaDerived = categoryInfo.network === 'twitter' ? 'X' : 'discord'
     // Converter dados da task para TaskFormData
     const editData: TaskFormData = {
       title: task.name as string,
       description: (task.description as string) || '',
-      verificationSteps: '', // Campo obrigatório, deixar vazio para edição
+      verificationSteps: (task.verificationSteps as string) || '',
       rewards: task.points as number,
       taskType: task.isDaily ? 'daily' : 'one-time',
       deadline: task.isDaily ? '' : new Date(task.deadline as string).toLocaleDateString('pt-BR'),
       taskCategoryId: task.taskCategoryId as number,
-      socialMedia: task.type as string, // Manter a rede social original
+      socialMedia: socialMediaDerived,
       link: (task.link as string) || ''
     }
     
@@ -200,9 +204,11 @@ export default function TasksTab() {
       socialMediaOptions = platforms.map(platform => platform.toLowerCase())
     } else if (taskCategories && taskCategories.length > 0) {
       // Use task categories platforms as fallback
-      socialMediaOptions = [...new Set(taskCategories.map(category => 
-        category.platform?.toLowerCase() || 'unknown'
-      ).filter(platform => platform !== 'unknown'))]
+      socialMediaOptions = [...new Set(
+        taskCategories
+          .map(category => category.plataform.toLowerCase())
+          .filter(platform => platform && platform !== 'unknown')
+      )]
     } else {
       // Final fallback to existing tasks platforms
       socialMediaOptions = [...new Set(tasks.map(task => {

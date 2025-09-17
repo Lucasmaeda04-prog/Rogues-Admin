@@ -27,6 +27,15 @@ export default function ImageUpload({
 
   const compressImage = (file: File, quality: number = 0.8): Promise<string> => {
     return new Promise((resolve, reject) => {
+      // Preserve GIFs as-is to keep animation
+      if (file.type === 'image/gif') {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read GIF file'));
+        reader.readAsDataURL(file);
+        return;
+      }
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new window.Image();
@@ -53,11 +62,12 @@ export default function ImageUpload({
         canvas.width = width;
         canvas.height = height;
 
-        // Draw and compress, preserving format
+        // Draw and compress, preserving format (PNG/WebP), default to JPEG
         ctx?.drawImage(img, 0, 0, width, height);
         
-        // Preserve PNG format for transparency, use JPEG for others
-        const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        let mimeType = 'image/jpeg';
+        if (file.type === 'image/png') mimeType = 'image/png';
+        if (file.type === 'image/webp') mimeType = 'image/webp';
         const compressedDataUrl = canvas.toDataURL(mimeType, quality);
         resolve(compressedDataUrl);
       };
@@ -177,17 +187,20 @@ export default function ImageUpload({
             <div className="flex items-center justify-between p-3 bg-[#f8f9fa] rounded-lg border border-[#e9ecef]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-[#e3f2fd] rounded-lg flex items-center justify-center overflow-hidden">
-                  {value.startsWith('http') ? (
-                    <Image 
-                      src={value} 
-                      alt="Current image" 
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <UploadIcon width={20} height={20} color="#1976d2" />
-                  )}
+                  {/* Preview for URLs or data URIs (including GIFs) */}
+                  {(() => {
+                    // Use Next Image for all cases (GIFs/data URIs included) to satisfy linting
+                    return (
+                      <Image 
+                        src={value} 
+                        alt="Current image" 
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    );
+                  })()}
                 </div>
                 <div className="flex-1">
                   <p className={cn(
@@ -315,7 +328,7 @@ export default function ImageUpload({
                 "text-[#6c757d] text-[14px]",
                 Campton.className
               )}>
-                JPEG, PNG, and WEBP formats, up to 5 MB
+                JPEG, PNG, GIF, and WEBP formats, up to 5 MB
               </p>
             </div>
             {!isDragActive && (

@@ -50,16 +50,24 @@ export const BadgeModal: React.FC<BadgeModalProps> = ({
           <div className="relative bg-gradient-to-b from-[#2a1c2f] to-[#1a1c1f] p-8 flex flex-col items-center">
             {/* Badge Image */}
             <div className="relative mb-6">
-              <Image 
-                src={badge.image}
-                alt={badge.title}
-                width={96}
-                height={112}
-                className={cn(
+              {(() => {
+                const src = badge.image || ''
+                const classes = cn(
                   "w-24 h-28 object-contain transition-all duration-300",
                   !badge.isUnlocked && "grayscale opacity-50"
-                )}
-              />
+                )
+                // Use Next Image for all cases (GIFs included) to satisfy linting
+                return (
+                  <Image 
+                    src={src}
+                    alt={badge.title}
+                    width={96}
+                    height={112}
+                    className={classes}
+                    unoptimized
+                  />
+                )
+              })()}
               {!badge.isUnlocked && !badge.isRequested && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">

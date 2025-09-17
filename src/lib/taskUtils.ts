@@ -105,7 +105,10 @@ export function isDeadlinePassed(deadline: string | Date): boolean {
  * @param categories - Array of task categories from backend
  * @returns Object with platform, action, and display info
  */
-export function getTaskCategoryInfo(taskCategoryId: number, categories: Array<{taskCategoryId: number, platform?: string, action?: string}>) {
+export function getTaskCategoryInfo(
+  taskCategoryId: number,
+  categories: Array<{ taskCategoryId: number; platform?: string; plataform?: string; action?: string }>
+) {
   const category = categories.find(cat => cat.taskCategoryId === taskCategoryId);
   
   if (!category) {
@@ -119,7 +122,8 @@ export function getTaskCategoryInfo(taskCategoryId: number, categories: Array<{t
     };
   }
 
-  const platform = category.platform?.toLowerCase() || 'unknown';
+  const rawPlatform = category.platform ?? category.plataform;
+  const platform = typeof rawPlatform === 'string' ? rawPlatform.toLowerCase() : 'unknown';
   const network = platform === 'twitter' ? 'twitter' : platform;
   const icon = getSocialNetworkIcon(network);
   const displayName = network === 'twitter' ? 'X' : network.charAt(0).toUpperCase() + network.slice(1);

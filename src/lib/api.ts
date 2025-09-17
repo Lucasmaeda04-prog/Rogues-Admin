@@ -261,8 +261,16 @@ export class ApiClient {
       // Convert base64 to blob
       const imageResponse = await fetch(data.image);
       const blob = await imageResponse.blob();
-      
-      formData.append('image', blob, 'badge.jpg');
+      // Derive file extension from data URL mime type
+      let ext = 'jpg';
+      const match = /^data:(image\/[a-zA-Z0-9.+-]+);/.exec(data.image);
+      if (match) {
+        const mime = match[1];
+        const subtype = mime.split('/')[1].toLowerCase();
+        if (subtype === 'jpeg') ext = 'jpg';
+        else if (['jpg','png','gif','webp'].includes(subtype)) ext = subtype;
+      }
+      formData.append('image', blob, `badge.${ext}`);
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('goal', data.goal);

@@ -42,7 +42,7 @@ export type TaskType = 'TWITTER_LIKE' | 'TWITTER_COMMENT' | 'TWITTER_RETWEET' | 
 export interface TaskCategory {
   taskCategoryId: number
   action: string
-  platform: string
+  plataform: string
 }
 
 export interface Task {
@@ -58,6 +58,7 @@ export interface Task {
   createdAt: string
   updatedAt: string
   isDaily: boolean
+  verificationSteps: string
   // Additional fields from API joins/calculations
   admin?: {
     name: string | null
@@ -138,6 +139,15 @@ export interface BadgeRequest {
   Admin?: {
     email: string
     name: string
+  }
+  Document?: {
+    documentId: string
+    title: string
+    DocumentAttachment?: {
+      filename: string
+      mimeType: string
+      fileUrl: string
+    }[]
   }
 }
 
@@ -236,6 +246,7 @@ export interface CreateTaskData {
   deadline?: string
   taskCategoryId: number
   isDaily?: boolean
+  verificationSteps?: string
 }
 
 export interface CreateBadgeData {

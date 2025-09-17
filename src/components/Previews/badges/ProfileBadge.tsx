@@ -60,16 +60,24 @@ const ProfileBadge: React.FC<ProfileBadgeProps> = ({ badge }) => {
       
       {/* Badge image */}
       <div className="w-20 h-24 relative group-hover:scale-105 transition-transform duration-300">
-        <Image 
-          src={badge.image}
-          alt={badge.title}
-          width={80}
-          height={96}
-          className={cn(
+        {(() => {
+          const src = badge.image || ''
+          const classes = cn(
             "w-full h-full object-contain transition-all duration-300",
             !badge.isUnlocked && "grayscale opacity-50"
-          )}
-        />
+          )
+          // Use Next Image for all cases (GIFs included) to satisfy linting
+          return (
+            <Image 
+              src={src}
+              alt={badge.title}
+              width={80}
+              height={96}
+              className={classes}
+              unoptimized
+            />
+          )
+        })()}
       </div>
 
       {/* Badge name */}

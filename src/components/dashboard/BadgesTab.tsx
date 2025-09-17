@@ -342,13 +342,20 @@ export default function BadgesTab() {
                     <TableCell>
                       <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
                         {badge.image ? (
-                          <Image
-                            src={badge.image}
-                            alt={badge.title}
-                            width={48}
-                            height={48}
-                            className="w-full h-full object-cover"
-                          />
+                          (() => {
+                            const src = badge.image || ''
+                            // Use Next Image for all cases (GIFs included) to satisfy linting
+                            return (
+                              <Image
+                                src={src}
+                                alt={badge.title}
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-cover"
+                                unoptimized
+                              />
+                            )
+                          })()
                         ) : (
                           <span className="text-xs">🏆</span>
                         )}

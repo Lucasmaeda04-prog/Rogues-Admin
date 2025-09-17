@@ -6,6 +6,7 @@ import { cn } from '@/lib/cn'
 import CustomSelect from './CustomSelect'
 import ImageUpload from '../ui/ImageUpload'
 import { CategorySelector } from './CategorySelector'
+import { ValidationRulesDisplay } from './ValidationRulesDisplay'
 
 export interface FormField {
   name: string
@@ -51,6 +52,7 @@ interface GenericFormProps {
   className?: string
   hideTitle?: boolean
   hideBorder?: boolean
+  showValidationRules?: boolean
 }
 
 export default function GenericForm({ 
@@ -62,7 +64,8 @@ export default function GenericForm({
   initialData = {},
   className = "",
   hideTitle = false,
-  hideBorder = false
+  hideBorder = false,
+  showValidationRules = true
 }: GenericFormProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -372,6 +375,15 @@ export default function GenericForm({
             renderGroup(groupName, fields)
           )}
         </div>
+
+        {/* Validation Rules Display - At the end before buttons */}
+        {showValidationRules && (
+          <ValidationRulesDisplay 
+            fields={config.fields} 
+            formData={formData}
+            className="mt-4 mb-4"
+          />
+        )}
 
         <div className="flex flex-col sm:flex-row gap-2.5 mt-4 flex-shrink-0">
           {(config.showCancel !== false) && (

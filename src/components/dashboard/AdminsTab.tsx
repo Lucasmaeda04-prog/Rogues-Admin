@@ -76,7 +76,7 @@ export default function AdminsTab() {
         } else {
           showError('Erro ao atualizar admin', result.error)
         }
-      } catch (error) {
+      } catch {
         showError('Erro inesperado', 'Ocorreu um erro ao atualizar o admin')
       }
       
