@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, ClipboardCopy } from 'lucide-react'
 import { useBadges } from '@/hooks'
 import { EditIcon, DeleteIcon } from '@/components/Icons'
 import Image from 'next/image'
@@ -61,12 +61,10 @@ export default function BadgesTab() {
       
       let result
       if (modalMode === 'edit' && editingBadge) {
-        // Find the badge ID from the current editing badge
-        const badgeToEdit = badges.find(b => b.title === editingBadge.title)
-        if (badgeToEdit) {
-          result = await updateBadge(badgeToEdit.badgeId, badgeData)
+        if (editingBadge.badgeId) {
+          result = await updateBadge(editingBadge.badgeId, badgeData)
         } else {
-          throw new Error('Badge not found for editing')
+          throw new Error('Badge ID missing for editing')
         }
       } else {
         result = await createBadge(badgeData)
@@ -102,7 +100,8 @@ export default function BadgesTab() {
       title: badge.title as string,
       description: (badge.description as string) || '',
       goal: (badge.goal as string) || '',
-      image: (badge.image as string) || ''
+      image: (badge.image as string) || '',
+      badgeId: badge.badgeId as string
     }
     
     setEditingBadge(editData)
@@ -116,6 +115,16 @@ export default function BadgesTab() {
       badgeId: badge.badgeId as string,
       badgeName: badge.title as string
     })
+  }
+
+  const handleCopyBadgeId = async (badgeId: string) => {
+    try {
+      await navigator.clipboard.writeText(badgeId)
+      showSuccess('Badge ID copiado!', 'O ID da badge foi copiado para a área de transferência.')
+    } catch (error) {
+      console.error('Error copying badge ID:', error)
+      showError('Erro ao copiar ID', 'Não foi possível copiar o ID da badge. Tente novamente.')
+    }
   }
 
   const handleDeleteConfirm = async () => {
@@ -322,7 +331,7 @@ export default function BadgesTab() {
                   Created {getSortIcon('createdAt')}
                 </Button>
               </TableHead>
-              <TableHead className="w-24">Actions</TableHead>
+                  <TableHead className="w-28">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -372,6 +381,13 @@ export default function BadgesTab() {
                     <TableCell>{new Date(badge.createdAt).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        <button
+                          onClick={() => handleCopyBadgeId(badge.badgeId)}
+                          className="p-1 text-slate-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"
+                          title="Copy badge ID"
+                        >
+                          <ClipboardCopy className="w-4 h-4" />
+                        </button>
                         <button 
                           onClick={() => handleEditBadge(badge as unknown as Record<string, unknown>)}
                           className="p-1 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded transition-colors"

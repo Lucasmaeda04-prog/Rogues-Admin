@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Campton } from '@/lib/fonts';
 import { cn } from '@/lib/cn';
 import ShopCard from '@/components/Previews/shopCard';
 import GenericForm from '@/components/forms/GenericForm';
 import { shopItemFormConfig } from '@/components/forms/form-configs';
 import { useShopCategories } from '@/hooks/useShop';
+import { useBadges } from '@/hooks';
 
 interface CreateShopItemModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface CreateShopItemModalProps {
   onSubmit: (data: ShopItemFormData) => void;
   isLoading?: boolean;
   editData?: ShopItemFormData | null;
-  mode?: 'create' | 'edit';
+  mode?: 'create' | 'edit' | 'view';
 }
 
 export interface ShopItemFormData {
@@ -25,6 +26,8 @@ export interface ShopItemFormData {
   tag: string;
   categoryId: number;
   image?: string;
+  requiredBadgeId?: string | null;
+  roleName?: string;
 }
 
 export default function CreateShopItemModal({ 
@@ -36,6 +39,32 @@ export default function CreateShopItemModal({
   mode = 'create'
 }: CreateShopItemModalProps) {
   const { categories } = useShopCategories()
+  const { badges } = useBadges()
+  const badgeOptions = useMemo(() => {
+    return [
+      { value: '', label: 'No badge required' },
+      ...badges.map(badge => ({ value: badge.badgeId, label: badge.title }))
+    ]
+  }, [badges])
+
+  const formConfig = useMemo(() => ({
+    ...shopItemFormConfig,
+    fields: shopItemFormConfig.fields.map(field => {
+      if (field.name === 'requiredBadgeId') {
+        return {
+          ...field,
+          options: badgeOptions
+        }
+      }
+      if (field.name === 'roleName') {
+        return {
+          ...field,
+          disabled: mode === 'view'
+        }
+      }
+      return field
+    })
+  }), [badgeOptions, mode])
   const [formData, setFormData] = useState<ShopItemFormData>({
     name: '',
     description: '',
@@ -43,12 +72,14 @@ export default function CreateShopItemModal({
     quantity: 0,
     tag: '',
     categoryId: 0,
-    image: ''
+    image: '',
+    requiredBadgeId: '',
+    roleName: ''
   });
 
   // Update form data when editData changes
   useEffect(() => {
-    if (editData && mode === 'edit') {
+    if (editData && (mode === 'edit' || mode === 'view')) {
       setFormData(editData);
     } else if (mode === 'create') {
       setFormData({
@@ -58,7 +89,9 @@ export default function CreateShopItemModal({
         quantity: 0,
         tag: '',
         categoryId: 0,
-        image: ''
+        image: '',
+        requiredBadgeId: '',
+        roleName: ''
       });
     }
   }, [editData, mode]);
@@ -81,6 +114,10 @@ export default function CreateShopItemModal({
   };
 
   const handleFormChange = (data: Record<string, unknown>) => {
+    if (mode === 'view') {
+      return
+    }
+
     const shopData: ShopItemFormData = {
       name: typeof data.name === 'string' ? data.name : '',
       description: typeof data.description === 'string' ? data.description : '',
@@ -88,7 +125,9 @@ export default function CreateShopItemModal({
       quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
       tag: typeof data.tag === 'string' ? data.tag : '',
       categoryId: typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 0,
-      image: typeof data.image === 'string' ? data.image : ''
+      image: typeof data.image === 'string' ? data.image : '',
+      requiredBadgeId: typeof data.requiredBadgeId === 'string' ? data.requiredBadgeId : '',
+      roleName: typeof data.roleName === 'string' ? data.roleName : ''
     };
     
     // Update local state for preview in real-time
@@ -96,6 +135,9 @@ export default function CreateShopItemModal({
   };
 
   const handleFormSubmit = (data: Record<string, unknown>) => {
+    if (mode === 'view') {
+      return
+    }
     const shopData: ShopItemFormData = {
       name: typeof data.name === 'string' ? data.name : '',
       description: typeof data.description === 'string' ? data.description : '',
@@ -103,7 +145,9 @@ export default function CreateShopItemModal({
       quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
       tag: typeof data.tag === 'string' ? data.tag : '',
       categoryId: typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 0,
-      image: typeof data.image === 'string' ? data.image : ''
+      image: typeof data.image === 'string' ? data.image : '',
+      requiredBadgeId: typeof data.requiredBadgeId === 'string' ? (data.requiredBadgeId || null) : null,
+      roleName: typeof data.roleName === 'string' ? data.roleName || undefined : undefined
     };
     
     onSubmit(shopData);
@@ -136,15 +180,15 @@ export default function CreateShopItemModal({
           <div className="flex-1 p-7 lg:pr-[21px] flex flex-col min-w-0 lg:min-w-[500px] overflow-y-auto">
             <div className="mb-6">
               <h2 className={cn("text-[#020202] text-[28px] font-semibold mb-2", Campton.className)}>
-                {mode === 'edit' ? 'Edit Item Shop' : 'Create Item Shop'}
+                {mode === 'edit' ? 'Edit Shop Item' : mode === 'view' ? 'View Shop Item' : 'Create Shop Item'}
               </h2>
               <p className={cn("text-[#949191] text-[14px] font-light", Campton.className)}>
-                Fill the inputs bellow
+                {mode === 'view' ? 'Shopify items are read-only inside this panel.' : 'Fill the inputs below'}
               </p>
             </div>
 
             <GenericForm
-              config={shopItemFormConfig}
+              config={formConfig}
               onSubmit={handleFormSubmit}
               onCancel={onClose}
               onChange={handleFormChange}
@@ -153,6 +197,8 @@ export default function CreateShopItemModal({
               className="flex-1"
               hideTitle={true}
               hideBorder={true}
+              showValidationRules={mode !== 'view'}
+              readOnly={mode === 'view'}
             />
           </div>
 

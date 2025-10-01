@@ -7,6 +7,7 @@
     "build": "next build",
     "pages:build": "NEXT_PUBLIC_API_URL='https://rogues-admin-production.up.railway.app' npx @cloudflare/next-on-pages",
     "pages:deploy": "wrangler pages deploy .vercel/output/static --project-name=rogues-admin",
+    "deploy": "npm run pages:build && npm run pages:deploy",
     "start": "next start",
     "lint": "next lint"
   },

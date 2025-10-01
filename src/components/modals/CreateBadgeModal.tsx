@@ -7,6 +7,9 @@ import ProfileBadge from '@/components/Previews/badges/ProfileBadge';
 import { BadgeModal } from '@/components/Previews/badges/BadgeModal';
 import GenericForm from '@/components/forms/GenericForm';
 import { badgeFormConfig } from '@/components/forms/form-configs';
+import { Button } from '@/components/ui/button';
+import { ClipboardCopy } from 'lucide-react';
+import { useToast } from '@/components/ui/ToastProvider';
 
 interface CreateBadgeModalProps {
   isOpen: boolean;
@@ -22,6 +25,7 @@ export interface BadgeFormData {
   description: string;
   goal: string;
   image: string;
+  badgeId?: string;
 }
 
 export default function CreateBadgeModal({ 
@@ -36,8 +40,10 @@ export default function CreateBadgeModal({
     title: '',
     description: '',
     goal: '',
-    image: ''
+    image: '',
+    badgeId: undefined
   });
+  const { showSuccess, showError } = useToast()
 
 
   // Update form data when editData changes
@@ -49,7 +55,8 @@ export default function CreateBadgeModal({
         title: '',
         description: '',
         goal: '',
-        image: ''
+        image: '',
+        badgeId: undefined
       });
     }
   }, [editData, mode]);
@@ -76,7 +83,8 @@ export default function CreateBadgeModal({
       title: typeof data.title === 'string' ? data.title : '',
       description: typeof data.description === 'string' ? data.description : '',
       goal: typeof data.goal === 'string' ? data.goal : '',
-      image: typeof data.image === 'string' ? data.image : ''
+      image: typeof data.image === 'string' ? data.image : '',
+      badgeId: typeof data.badgeId === 'string' ? data.badgeId : formData.badgeId
     };
     
     // Update local state for preview in real-time
@@ -88,7 +96,8 @@ export default function CreateBadgeModal({
       title: typeof data.title === 'string' ? data.title : '',
       description: typeof data.description === 'string' ? data.description : '',
       goal: typeof data.goal === 'string' ? data.goal : '',
-      image: typeof data.image === 'string' ? data.image : ''
+      image: typeof data.image === 'string' ? data.image : '',
+      badgeId: formData.badgeId
     };
     
     onSubmit(badgeData);
@@ -106,6 +115,17 @@ export default function CreateBadgeModal({
   };
 
 
+  const handleCopyBadgeId = async () => {
+    if (!formData.badgeId) return
+    try {
+      await navigator.clipboard.writeText(formData.badgeId)
+      showSuccess('Badge ID copied', 'The badge ID is ready to paste.')
+    } catch (error) {
+      console.error('Failed to copy badge ID', error)
+      showError('Copy failed', 'Unable to copy the badge ID. Please try again.')
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50">
         <div 
@@ -121,13 +141,33 @@ export default function CreateBadgeModal({
           >
             {/* Left side - Form */}
             <div className="flex-1 p-7 lg:pr-[21px] flex flex-col min-w-0 lg:min-w-[500px]">
-              <div className="mb-6">
-                <h2 className={cn("text-[#020202] text-[28px] font-semibold mb-2", Campton.className)}>
-                  {mode === 'edit' ? 'Edit Badge' : 'Create Badge'}
-                </h2>
-                <p className={cn("text-[#949191] text-[14px] font-light", Campton.className)}>
-                  Fill the inputs bellow
-                </p>
+              <div className="mb-6 flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div>
+                    <h2 className={cn("text-[#020202] text-[28px] font-semibold", Campton.className)}>
+                      {mode === 'edit' ? 'Edit Badge' : 'Create Badge'}
+                    </h2>
+                    <p className={cn("text-[#949191] text-[14px] font-light", Campton.className)}>
+                      Fill the inputs below
+                    </p>
+                  </div>
+                  {mode === 'edit' && formData.badgeId && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-10 gap-2 border-blue-200 text-blue-700 hover:bg-blue-50 hover:text-blue-900"
+                      onClick={handleCopyBadgeId}
+                    >
+                      <ClipboardCopy className="w-4 h-4" />
+                      Copy ID
+                    </Button>
+                  )}
+                </div>
+                {mode === 'edit' && formData.badgeId && (
+                  <span className={cn("text-xs text-[#6b7280]", Campton.className)}>
+                    {formData.badgeId}
+                  </span>
+                )}
               </div>
 
               <GenericForm

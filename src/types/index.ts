@@ -177,6 +177,8 @@ export interface ShopItem {
   quantity: number
   createdAt: string
   updatedAt: string
+  roleName?: string | null
+  requiredBadgeId?: string | null
   category?: {
     shopItemCategoryId: number
     name: string
@@ -217,6 +219,13 @@ export interface CreateShopCategoryResponse {
 export interface CreateStockMovementResponse {
   message: string
   data: StockMovement
+}
+
+export interface ShopifySyncResponse {
+  message: string
+  created: number
+  updated: number
+  skipped: number
 }
 
 // =============================================================================
@@ -265,6 +274,8 @@ export interface CreateShopItemData {
   categoryId: number
   available?: boolean
   quantity?: number
+  requiredBadgeId?: string | null
+  roleName?: string | null
 }
 
 export interface CreateShopCategoryData {

@@ -329,12 +329,30 @@ export const shopItemFormConfig: FormConfig = {
       }
     },
     {
+      name: 'roleName',
+      label: 'Discord Role Name',
+      type: 'text',
+      placeholder: 'Optional role name for Discord sync',
+      required: false,
+      group: 'tag-category',
+      groupWidth: 'flex-1',
+      description: 'Displayed only for Discord items. Leave empty for Shopify imports.'
+    },
+    {
       name: 'categoryId',
       label: 'Category',
       type: 'category-selector',
       required: true,
       group: 'tag-category',
       groupWidth: 'flex-1'
+    },
+    {
+      name: 'requiredBadgeId',
+      label: 'Required Badge',
+      type: 'select',
+      placeholder: 'No badge required',
+      description: 'Optional badge needed before this item becomes available.',
+      required: false
     },
     {
       name: 'image',

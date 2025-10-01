@@ -53,6 +53,7 @@ interface GenericFormProps {
   hideTitle?: boolean
   hideBorder?: boolean
   showValidationRules?: boolean
+  readOnly?: boolean
 }
 
 export default function GenericForm({ 
@@ -65,7 +66,8 @@ export default function GenericForm({
   className = "",
   hideTitle = false,
   hideBorder = false,
-  showValidationRules = true
+  showValidationRules = true,
+  readOnly = false
 }: GenericFormProps) {
   const [formData, setFormData] = useState<Record<string, unknown>>({})
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -132,6 +134,10 @@ export default function GenericForm({
   }
 
   const handleChange = (fieldName: string, value: unknown) => {
+    if (readOnly) {
+      return
+    }
+
     const newFormData = { ...formData, [fieldName]: value }
     setFormData(newFormData)
     
@@ -146,6 +152,10 @@ export default function GenericForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (readOnly) {
+      return
+    }
     
     // Validate all fields
     const newErrors: Record<string, string> = {}
@@ -180,7 +190,7 @@ export default function GenericForm({
 
   const renderField = (field: FormField) => {
     const isConditionallyDisabled = field.conditionalDisabled ? field.conditionalDisabled(formData) : false
-    const isFieldDisabled = isLoading || field.disabled || isConditionallyDisabled
+    const isFieldDisabled = readOnly || isLoading || field.disabled || isConditionallyDisabled
     
     const getInputClassName = (extraClasses = '') => cn(
       "w-full px-3.5 py-2 bg-[#f9f9f9] rounded-[10px] border-[1.3px] border-[#efefef] text-[14px] font-light placeholder:text-[#949191] focus:outline-none focus:border-[#020202]",
@@ -274,6 +284,7 @@ export default function GenericForm({
             error={errors[field.name]}
             label={field.label}
             required={field.required}
+            disabled={readOnly || isFieldDisabled}
           />
         )
 
@@ -377,7 +388,7 @@ export default function GenericForm({
         </div>
 
         {/* Validation Rules Display - At the end before buttons */}
-        {showValidationRules && (
+        {showValidationRules && !readOnly && (
           <ValidationRulesDisplay 
             fields={config.fields} 
             formData={formData}
@@ -385,31 +396,33 @@ export default function GenericForm({
           />
         )}
 
-        <div className="flex flex-col sm:flex-row gap-2.5 mt-4 flex-shrink-0">
-          {(config.showCancel !== false) && (
+        {!readOnly && (
+          <div className="flex flex-col sm:flex-row gap-2.5 mt-4 flex-shrink-0">
+            {(config.showCancel !== false) && (
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={isLoading}
+                className={cn(
+                  "flex-1 h-[47px] bg-[#a0a0a0] text-white rounded-[9px] border border-[#efefef] text-[20px] font-semibold hover:bg-[#909090] transition-colors disabled:opacity-50",
+                  Campton.className
+                )}
+              >
+                {config.cancelLabel || 'Cancel'}
+              </button>
+            )}
             <button
-              type="button"
-              onClick={handleReset}
+              type="submit"
               disabled={isLoading}
               className={cn(
-                "flex-1 h-[47px] bg-[#a0a0a0] text-white rounded-[9px] border border-[#efefef] text-[20px] font-semibold hover:bg-[#909090] transition-colors disabled:opacity-50",
+                "flex-1 sm:w-[317px] h-[47px] bg-[#09171a] text-white rounded-[9px] border border-[#efefef] text-[20px] font-semibold hover:bg-[#131f22] transition-colors disabled:opacity-50",
                 Campton.className
               )}
             >
-              {config.cancelLabel || 'Cancel'}
+              {isLoading ? 'Saving...' : (config.submitLabel || 'Save')}
             </button>
-          )}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={cn(
-              "flex-1 sm:w-[317px] h-[47px] bg-[#09171a] text-white rounded-[9px] border border-[#efefef] text-[20px] font-semibold hover:bg-[#131f22] transition-colors disabled:opacity-50",
-              Campton.className
-            )}
-          >
-            {isLoading ? 'Saving...' : (config.submitLabel || 'Save')}
-          </button>
-        </div>
+          </div>
+        )}
       </form>
     </div>
   )

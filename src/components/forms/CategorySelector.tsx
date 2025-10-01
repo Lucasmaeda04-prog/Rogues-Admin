@@ -13,9 +13,10 @@ interface CategorySelectorProps {
   error?: string
   label?: string
   required?: boolean
+  disabled?: boolean
 }
 
-export function CategorySelector({ value, onChange, error, label, required }: CategorySelectorProps) {
+export function CategorySelector({ value, onChange, error, label, required, disabled = false }: CategorySelectorProps) {
   const { categories, loading, createCategory } = useShopCategories()
   const { showSuccess, showError } = useToast()
   
@@ -32,12 +33,14 @@ export function CategorySelector({ value, onChange, error, label, required }: Ca
   }, [value])
 
   const handleCategorySelect = (categoryId: string | number) => {
+    if (disabled) return
     setSelectedCategoryId(categoryId)
     onChange(categoryId)
     setIsDropdownOpen(false)
   }
 
   const handleCreateCategory = async () => {
+    if (disabled) return
     if (!newCategoryName.trim()) {
       showError('Nome inválido', 'Digite um nome para a nova categoria')
       return
@@ -95,12 +98,16 @@ export function CategorySelector({ value, onChange, error, label, required }: Ca
       <div className="relative">
         <button
           type="button"
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          onClick={() => {
+            if (disabled) return
+            setIsDropdownOpen(!isDropdownOpen)
+          }}
           className={`
-            relative w-full bg-white border rounded-md px-3 py-2.5 text-left shadow-sm cursor-pointer h-[47px]
+            relative w-full bg-white border rounded-md px-3 py-2.5 text-left shadow-sm h-[47px]
             focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500
             ${error ? 'border-red-300' : 'border-gray-300'}
             ${!selectedCategory ? 'text-gray-500' : 'text-gray-900'}
+            ${disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
           `}
         >
           <span className="block truncate">
@@ -109,7 +116,7 @@ export function CategorySelector({ value, onChange, error, label, required }: Ca
           <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
         </button>
 
-        {isDropdownOpen && (
+        {isDropdownOpen && !disabled && (
           <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-300 max-h-60 overflow-auto">
             {/* Existing Categories */}
             <div className="py-1">
@@ -149,11 +156,12 @@ export function CategorySelector({ value, onChange, error, label, required }: Ca
                       handleCreateCategory()
                     }
                   }}
+                  disabled={disabled}
                 />
                 <button
                   type="button"
                   onClick={handleCreateCategory}
-                  disabled={isCreating || !newCategoryName.trim()}
+                  disabled={disabled || isCreating || !newCategoryName.trim()}
                   className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="h-3 w-3" />

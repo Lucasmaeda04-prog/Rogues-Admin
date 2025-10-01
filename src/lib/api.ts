@@ -140,6 +140,13 @@ export class ApiClient {
     return this.request<ShopItem[]>('/shop/item')
   }
 
+  async syncShopify(): Promise<{ message: string; created: number; updated: number; skipped: number }> {
+    return this.request<{ message: string; created: number; updated: number; skipped: number }>(
+      '/shop/item/shopify/sync',
+      { method: 'POST' }
+    )
+  }
+
   async createShopItem(data: CreateShopItemData): Promise<{ message: string; shopItem: ShopItem }> {
     // If there's an image file, use FormData instead of JSON
     if (data.image && data.image.startsWith('data:')) {
@@ -157,6 +164,12 @@ export class ApiClient {
       formData.append('categoryId', data.categoryId.toString());
       formData.append('available', (data.available ?? true).toString());
       formData.append('quantity', (data.quantity ?? 0).toString());
+      if (data.requiredBadgeId) {
+        formData.append('requiredBadgeId', data.requiredBadgeId);
+      }
+      if (data.roleName) {
+        formData.append('roleName', data.roleName);
+      }
 
       const url = `${this.baseUrl}/shop/item`
       const config = {

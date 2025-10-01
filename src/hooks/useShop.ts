@@ -1,18 +1,12 @@
 import { useCallback } from 'react'
 import { api } from '@/lib/api'
 import { useApi } from './useApi'
-import type { CreateShopCategoryData, CreateStockMovementData } from '@/types'
+import type { CreateShopCategoryData, CreateShopItemData, CreateStockMovementData } from '@/types'
 
 export function useShopItems() {
   const { data, loading, error, refetch } = useApi(() => api.getShopItems())
 
-  const createItem = useCallback(async (itemData: {
-    name: string
-    description?: string
-    price: number
-    categoryId: number
-    imageUrl?: string
-  }) => {
+  const createItem = useCallback(async (itemData: CreateShopItemData) => {
     try {
       await api.createShopItem(itemData)
       await refetch()
@@ -25,13 +19,7 @@ export function useShopItems() {
     }
   }, [refetch])
 
-  const updateItem = useCallback(async (id: string, itemData: {
-    name?: string
-    description?: string
-    price?: number
-    categoryId?: number 
-    imageUrl?: string
-  }) => {
+  const updateItem = useCallback(async (id: string, itemData: Partial<CreateShopItemData> & { imageUrl?: string }) => {
     try {
       await api.updateShopItem(id, itemData)
       await refetch()
