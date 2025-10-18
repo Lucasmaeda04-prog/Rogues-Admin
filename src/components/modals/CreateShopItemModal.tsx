@@ -6,7 +6,6 @@ import { cn } from '@/lib/cn';
 import ShopCard from '@/components/Previews/shopCard';
 import GenericForm from '@/components/forms/GenericForm';
 import { shopItemFormConfig } from '@/components/forms/form-configs';
-import { useShopCategories } from '@/hooks/useShop';
 import { useBadges } from '@/hooks';
 
 interface CreateShopItemModalProps {
@@ -38,7 +37,6 @@ export default function CreateShopItemModal({
   editData = null,
   mode = 'create'
 }: CreateShopItemModalProps) {
-  const { categories } = useShopCategories()
   const { badges } = useBadges()
 
   const [formData, setFormData] = useState<ShopItemFormData>({
@@ -47,7 +45,7 @@ export default function CreateShopItemModal({
     price: 0,
     quantity: 0,
     tag: '',
-    categoryId: 0,
+    categoryId: 1, // Default to Discord Roles
     image: '',
     requiredBadgeId: '',
     roleName: ''
@@ -70,8 +68,8 @@ export default function CreateShopItemModal({
         }
       }
       if (field.name === 'roleName') {
-        // Hide roleName field for Shopify items (when tag is 'shopify')
-        const isShopifyItem = formData.tag === 'shopify'
+        // Hide roleName field for Shopify items (categoryId === 2)
+        const isShopifyItem = formData.categoryId === 2
         return {
           ...field,
           disabled: mode === 'view' || isShopifyItem,
@@ -82,7 +80,7 @@ export default function CreateShopItemModal({
       }
       return field
     })
-  }), [badgeOptions, mode, formData.tag])
+  }), [badgeOptions, mode, formData.categoryId])
 
   // Update form data when editData changes
   useEffect(() => {
@@ -95,7 +93,7 @@ export default function CreateShopItemModal({
         price: 0,
         quantity: 0,
         tag: '',
-        categoryId: 0,
+        categoryId: 1, // Default to Discord Roles
         image: '',
         requiredBadgeId: '',
         roleName: ''
@@ -125,18 +123,22 @@ export default function CreateShopItemModal({
       return
     }
 
+    const itemName = typeof data.name === 'string' ? data.name : '';
+    const currentCategoryId = typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 1;
+
     const shopData: ShopItemFormData = {
-      name: typeof data.name === 'string' ? data.name : '',
+      name: itemName,
       description: typeof data.description === 'string' ? data.description : '',
       price: typeof data.price === 'number' ? data.price : Number(data.price) || 0,
       quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
       tag: typeof data.tag === 'string' ? data.tag : '',
-      categoryId: typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 0,
+      categoryId: currentCategoryId,
       image: typeof data.image === 'string' ? data.image : '',
       requiredBadgeId: typeof data.requiredBadgeId === 'string' ? data.requiredBadgeId : '',
-      roleName: typeof data.roleName === 'string' ? data.roleName : ''
+      // Sync roleName with name for Discord items (categoryId === 1)
+      roleName: currentCategoryId === 1 ? itemName : (typeof data.roleName === 'string' ? data.roleName : '')
     };
-    
+
     // Update local state for preview in real-time
     setFormData(shopData);
   };
@@ -145,31 +147,28 @@ export default function CreateShopItemModal({
     if (mode === 'view') {
       return
     }
+    const itemName = typeof data.name === 'string' ? data.name : '';
+    const currentCategoryId = typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 1;
+
     const shopData: ShopItemFormData = {
-      name: typeof data.name === 'string' ? data.name : '',
+      name: itemName,
       description: typeof data.description === 'string' ? data.description : '',
       price: typeof data.price === 'number' ? data.price : Number(data.price) || 0,
       quantity: typeof data.quantity === 'number' ? data.quantity : Number(data.quantity) || 0,
       tag: typeof data.tag === 'string' ? data.tag : '',
-      categoryId: typeof data.categoryId === 'number' ? data.categoryId : Number(data.categoryId) || 0,
+      categoryId: currentCategoryId,
       image: typeof data.image === 'string' ? data.image : '',
       requiredBadgeId: typeof data.requiredBadgeId === 'string' ? (data.requiredBadgeId || null) : null,
-      roleName: typeof data.roleName === 'string' ? data.roleName || undefined : undefined
+      // Sync roleName with name for Discord items (categoryId === 1)
+      roleName: currentCategoryId === 1 ? itemName : (typeof data.roleName === 'string' ? data.roleName || undefined : undefined)
     };
-    
+
     onSubmit(shopData);
   };
 
   const getDefaultImage = () => {
     return '/assets/1f0370151ddcfa7a9e9c8817eaf92f77a581778b.png';
   };
-
-  const getCategoryName = (categoryId: number) => {
-    if (!categoryId) return 'Category';
-    const category = categories.find(cat => cat.shopItemCategoryId === categoryId);
-    return category ? category.name : 'Category';
-  };
-
   return (
     <div className="fixed inset-0 z-50">
       <div 
@@ -184,29 +183,44 @@ export default function CreateShopItemModal({
           onClick={(e) => e.stopPropagation()}
         >
           {/* Left side - Form */}
-          <div className="flex-1 p-7 lg:pr-[21px] flex flex-col min-w-0 lg:min-w-[500px] overflow-y-auto">
-            <div className="mb-6">
+          <div className="flex-1 flex flex-col min-w-0 lg:min-w-[500px] overflow-hidden">
+            {/* Fixed Header */}
+            <div className="px-7 pt-7 pb-6 lg:pr-[21px] flex-shrink-0">
               <h2 className={cn("text-[#020202] text-[28px] font-semibold mb-2", Campton.className)}>
-                {mode === 'edit' ? 'Edit Shop Item' : mode === 'view' ? 'View Shop Item' : 'Create Shop Item'}
+                {mode === 'edit'
+                  ? (formData.categoryId === 1 ? 'Edit Discord Role' : 'Edit Shop Item')
+                  : mode === 'view'
+                    ? 'View Shop Item'
+                    : (formData.categoryId === 1 ? 'Create Discord Role' : 'Create Shop Item')}
               </h2>
               <p className={cn("text-[#949191] text-[14px] font-light", Campton.className)}>
                 {mode === 'view' ? 'Shopify items are read-only inside this panel.' : 'Fill the inputs below'}
               </p>
             </div>
 
-            <GenericForm
-              config={formConfig}
-              onSubmit={handleFormSubmit}
-              onCancel={onClose}
-              onChange={handleFormChange}
-              isLoading={isLoading}
-              initialData={formData as unknown as Record<string, unknown>}
-              className="flex-1"
-              hideTitle={true}
-              hideBorder={true}
-              showValidationRules={mode !== 'view'}
-              readOnly={mode === 'view'}
-            />
+            {/* Scrollable Form */}
+            <div className="flex-1 overflow-y-auto px-7 lg:pr-[21px]">
+              <GenericForm
+                config={{
+                  ...formConfig,
+                  submitLabel: mode === 'edit'
+                    ? (formData.categoryId === 1 ? 'Update Role' : 'Update Item')
+                    : mode === 'view'
+                      ? 'Close'
+                      : (formData.categoryId === 1 ? 'Create Role' : 'Create Item')
+                }}
+                onSubmit={handleFormSubmit}
+                onCancel={onClose}
+                onChange={handleFormChange}
+                isLoading={isLoading}
+                initialData={formData as unknown as Record<string, unknown>}
+                className="flex-1"
+                hideTitle={true}
+                hideBorder={true}
+                showValidationRules={mode !== 'view'}
+                readOnly={mode === 'view'}
+              />
+            </div>
           </div>
 
           {/* Right Side - Preview */}
@@ -228,7 +242,7 @@ export default function CreateShopItemModal({
                 title={formData.name || 'Item Name'}
                 description={formData.description || 'Item description will appear here'}
                 price={formData.price || 0}
-                category={getCategoryName(formData.categoryId)}
+                category={formData.categoryId === 1 ? 'Discord Role' : 'Shopify'}
                 stock={formData.quantity || 0}
                 imageUrl={formData.image || getDefaultImage()}
                 tag={formData.tag || undefined}

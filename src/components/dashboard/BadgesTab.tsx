@@ -364,12 +364,17 @@ export default function BadgesTab() {
                                 height={48}
                                 className="w-full h-full object-cover"
                                 unoptimized
+                                onError={(e) => {
+                                  const target = e.currentTarget
+                                  target.style.display = 'none'
+                                  const fallback = target.nextElementSibling
+                                  if (fallback) fallback.classList.remove('hidden')
+                                }}
                               />
                             )
                           })()
-                        ) : (
-                          <span className="text-xs">🏆</span>
-                        )}
+                        ) : null}
+                        <span className={`text-xs ${badge.image ? 'hidden' : ''}`}>🏆</span>
                       </div>
                     </TableCell>
                     <TableCell>{badge.title}</TableCell>

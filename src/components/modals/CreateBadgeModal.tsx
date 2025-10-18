@@ -139,14 +139,15 @@ export default function CreateBadgeModal({
         />
         
         <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-          <div 
-            className="bg-white rounded-[22px] w-full max-w-[1400px] max-h-[95vh] overflow-y-auto pointer-events-auto flex flex-col lg:flex-row"
+          <div
+            className="bg-white rounded-[22px] w-full max-w-[1400px] max-h-[95vh] pointer-events-auto flex flex-col lg:flex-row overflow-hidden"
             style={{ filter: 'none !important' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Left side - Form */}
-            <div className="flex-1 p-7 lg:pr-[21px] flex flex-col min-w-0 lg:min-w-[500px]">
-              <div className="mb-6 flex flex-col gap-2">
+            <div className="flex-1 flex flex-col min-w-0 lg:min-w-[500px] overflow-hidden">
+              {/* Fixed Header */}
+              <div className="px-7 pt-7 pb-6 lg:pr-[21px] flex-shrink-0 flex flex-col gap-2">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <h2 className={cn("text-[#020202] text-[28px] font-semibold", Campton.className)}>
@@ -175,17 +176,23 @@ export default function CreateBadgeModal({
                 )}
               </div>
 
-              <GenericForm
-                config={badgeFormConfig}
-                onSubmit={handleFormSubmit}
-                onCancel={onClose}
-                onChange={handleFormChange}
-                isLoading={isLoading}
-                initialData={formData as unknown as Record<string, unknown>}
-                className="flex-1"
-                hideTitle={true}
-                hideBorder={true}
-              />
+              {/* Scrollable Form */}
+              <div className="flex-1 overflow-y-auto px-7 lg:pr-[21px]">
+                <GenericForm
+                  config={{
+                    ...badgeFormConfig,
+                    submitLabel: mode === 'edit' ? 'Update Badge' : 'Create Badge'
+                  }}
+                  onSubmit={handleFormSubmit}
+                  onCancel={onClose}
+                  onChange={handleFormChange}
+                  isLoading={isLoading}
+                  initialData={formData as unknown as Record<string, unknown>}
+                  className="flex-1"
+                  hideTitle={true}
+                  hideBorder={true}
+                />
+              </div>
             </div>
 
             {/* Right Side - Preview */}

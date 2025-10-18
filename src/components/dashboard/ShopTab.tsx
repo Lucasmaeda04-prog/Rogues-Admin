@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { ArrowUpDown, Eye } from 'lucide-react'
-import { useShopItems, useShopCategories } from '@/hooks'
+import { useShopItems } from '@/hooks'
 import { api } from '@/lib/api'
 import { CreateShopItemData, ShopItem } from '@/types'
 import CreateShopItemModal, { ShopItemFormData } from '@/components/modals/CreateShopItemModal'
@@ -30,7 +30,6 @@ import { Button } from '@/components/ui/button'
 
 export default function ShopTab() {
   const { items, updateItem, deleteItem, refreshItems } = useShopItems()
-  const { categories } = useShopCategories()
   const { showSuccess, showError } = useToast()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -45,7 +44,6 @@ export default function ShopTab() {
   
   // Filters and sorting state
   const [filters, setFilters] = useState({
-    category: 'all',
     availability: 'all',
     dateFrom: '',
     dateTo: ''
@@ -56,8 +54,8 @@ export default function ShopTab() {
     order: 'desc' as 'asc' | 'desc'
   })
 
-  const shopifyItems = useMemo<ShopItem[]>(() => items.filter(item => item.tag === 'shopify'), [items])
-  const discordItems = useMemo<ShopItem[]>(() => items.filter(item => item.tag !== 'shopify'), [items])
+  const shopifyItems = useMemo<ShopItem[]>(() => items.filter(item => item.categoryId === 2), [items])
+  const discordItems = useMemo<ShopItem[]>(() => items.filter(item => item.categoryId === 1), [items])
 
   const sortItems = useCallback((list: ShopItem[]) => {
     return [...list].sort((a, b) => {
@@ -114,7 +112,7 @@ export default function ShopTab() {
           image: data.image,
           price: data.price,
           tag: data.tag,
-          categoryId: Number(data.categoryId) || 1,
+          categoryId: data.categoryId,
           available: true,
           quantity: data.quantity,
           requiredBadgeId: data.requiredBadgeId && data.requiredBadgeId.length > 0 ? data.requiredBadgeId : undefined,
@@ -146,7 +144,7 @@ export default function ShopTab() {
           description: data.description,
           price: data.price,
           imageUrl: data.image,
-          categoryId: Number(data.categoryId) || 1,
+          categoryId: data.categoryId,
           requiredBadgeId: data.requiredBadgeId && data.requiredBadgeId.length > 0 ? data.requiredBadgeId : null,
           roleName: trimmedRoleName.length > 0 ? trimmedRoleName : null
         }
@@ -182,8 +180,8 @@ export default function ShopTab() {
     price: item.price,
     quantity: item.quantity,
     tag: item.tag || '',
-    categoryId: item.categoryId || 1,
     image: item.image || '',
+    categoryId: item.categoryId,
     requiredBadgeId: item.requiredBadgeId || '',
     roleName: item.roleName || ''
   }), [])
@@ -272,21 +270,6 @@ export default function ShopTab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   
-  // Get unique values for filters
-  const filterOptions = useMemo(() => {
-    const discordCategoryIds = new Set(discordItems.map(item => item.categoryId))
-    const categoryOptions = categories
-      .filter(cat => discordCategoryIds.size === 0 || discordCategoryIds.has(cat.shopItemCategoryId))
-      .map(cat => ({
-        value: cat.shopItemCategoryId.toString(),
-        label: cat.name
-      }))
-
-    return {
-      categories: categoryOptions
-    }
-  }, [categories, discordItems])
-
   const sortedShopifyItems = useMemo(() => sortItems(shopifyItems), [shopifyItems, sortItems])
 
   // Filter and sort discord-only items
@@ -294,7 +277,6 @@ export default function ShopTab() {
     const filtered = discordItems.filter(item => {
       const createdDate = new Date(item.createdAt)
       
-      const categoryMatch = filters.category === 'all' || item.categoryId.toString() === filters.category
       const availabilityMatch = filters.availability === 'all' || 
         (filters.availability === 'available' && item.available) ||
         (filters.availability === 'unavailable' && !item.available)
@@ -303,12 +285,12 @@ export default function ShopTab() {
       const dateFromMatch = !filters.dateFrom || createdDate >= new Date(filters.dateFrom)
       const dateToMatch = !filters.dateTo || createdDate <= new Date(filters.dateTo + 'T23:59:59')
       
-      return categoryMatch && availabilityMatch && dateFromMatch && dateToMatch
+      return availabilityMatch && dateFromMatch && dateToMatch
     })
     return sortItems(filtered)
   }, [discordItems, filters, sortItems])
 
-  const filtersApplied = filters.category !== 'all' || filters.availability !== 'all' || filters.dateFrom !== '' || filters.dateTo !== ''
+  const filtersApplied = filters.availability !== 'all' || filters.dateFrom !== '' || filters.dateTo !== ''
 
   const discordCountLabel = useMemo(() => {
     if (discordItems.length === 0) {
@@ -329,7 +311,6 @@ export default function ShopTab() {
 
   const resetFilters = () => {
     setFilters({
-      category: 'all',
       availability: 'all',
       dateFrom: '',
       dateTo: ''
@@ -425,10 +406,15 @@ export default function ShopTab() {
                             width={48}
                             height={48}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.currentTarget
+                              target.style.display = 'none'
+                              const fallback = target.nextElementSibling
+                              if (fallback) fallback.classList.remove('hidden')
+                            }}
                           />
-                        ) : (
-                          <span className="text-gray-400 text-xs">📦</span>
-                        )}
+                        ) : null}
+                        <span className={`text-gray-400 text-xs ${item.image ? 'hidden' : ''}`}>📦</span>
                       </div>
                     </TableCell>
                     <TableCell>{item.name}</TableCell>
@@ -497,20 +483,6 @@ export default function ShopTab() {
         </div>
 
         <div className="flex flex-wrap items-end gap-2">
-          <Select value={filters.category} onValueChange={(value) => handleFilterChange('category', value)}>
-            <SelectTrigger className="w-[180px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow" style={{borderColor: 'rgba(148, 145, 145, 1)'}}>
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {filterOptions.categories.map(category => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
           <Select value={filters.availability} onValueChange={(value) => handleFilterChange('availability', value)}>
             <SelectTrigger className="w-[140px] shadow-md rounded-xl font-light hover:shadow-lg transition-shadow" style={{borderColor: 'rgba(148, 145, 145, 1)'}}>
               <SelectValue placeholder="All Items" />
@@ -601,10 +573,15 @@ export default function ShopTab() {
                             width={48}
                             height={48}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.currentTarget
+                              target.style.display = 'none'
+                              const fallback = target.nextElementSibling
+                              if (fallback) fallback.classList.remove('hidden')
+                            }}
                           />
-                        ) : (
-                          <span className="text-gray-400 text-xs">📦</span>
-                        )}
+                        ) : null}
+                        <span className={`text-gray-400 text-xs ${item.image ? 'hidden' : ''}`}>📦</span>
                       </div>
                     </TableCell>
                     <TableCell>{item.name}</TableCell>

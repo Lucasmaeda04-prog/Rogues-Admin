@@ -170,14 +170,14 @@ export function ValidationRulesDisplay({ fields, formData, className, onValidati
       )}>
         Requirements:
       </h4>
-      <div className="space-y-1.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1.5">
         {validationRules.map((rule) => (
           <div key={rule.id} className="flex items-start gap-2">
-            <div 
+            <div
               className={cn(
-                "mt-0.5 h-3 w-3 rounded-full border flex items-center justify-center",
-                rule.isValid 
-                  ? "bg-cyan-500 border-cyan-500" 
+                "mt-0.5 h-3 w-3 rounded-full border flex items-center justify-center flex-shrink-0",
+                rule.isValid
+                  ? "bg-cyan-500 border-cyan-500"
                   : "bg-white border-gray-300"
               )}
             >
@@ -185,8 +185,8 @@ export function ValidationRulesDisplay({ fields, formData, className, onValidati
                 <div className="h-1.5 w-1.5 bg-white rounded-full"></div>
               )}
             </div>
-            <label 
-              htmlFor={rule.id} 
+            <label
+              htmlFor={rule.id}
               className={cn(
                 "text-sm cursor-default select-none font-light",
                 rule.isValid ? "text-cyan-600 line-through opacity-60" : "text-gray-700",

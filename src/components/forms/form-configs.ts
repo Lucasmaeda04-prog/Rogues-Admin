@@ -319,12 +319,11 @@ export const shopItemFormConfig: FormConfig = {
       name: 'tag',
       label: 'Tag',
       type: 'text',
-      placeholder: 'Enter tag',
-      required: true,
-      group: 'tag-category',
+      placeholder: 'Enter tag (optional)',
+      required: false,
+      group: 'tag-role',
       groupWidth: 'flex-1',
       validation: {
-        minLength: 1,
         maxLength: 50
       }
     },
@@ -334,17 +333,9 @@ export const shopItemFormConfig: FormConfig = {
       type: 'text',
       placeholder: 'Optional role name for Discord sync',
       required: false,
-      group: 'tag-category',
+      group: 'tag-role',
       groupWidth: 'flex-1',
       description: 'Displayed only for Discord items. Leave empty for Shopify imports.'
-    },
-    {
-      name: 'categoryId',
-      label: 'Category',
-      type: 'category-selector',
-      required: true,
-      group: 'tag-category',
-      groupWidth: 'flex-1'
     },
     {
       name: 'requiredBadgeId',

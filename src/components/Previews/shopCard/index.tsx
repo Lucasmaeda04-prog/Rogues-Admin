@@ -9,10 +9,10 @@ export interface ShopCardProps {
   title: string;
   description: string;
   price: number;
-  category: string;
   stock: number;
   imageUrl: string;
   tag?: string;
+  category?: string;
   onPurchase: () => void;
   className?: string;
 }
@@ -21,14 +21,15 @@ const ShopCard: React.FC<ShopCardProps> = ({
   title,
   description,
   price,
-  category,
   stock,
   imageUrl,
   tag,
+  category,
   onPurchase,
   className,
 }) => {
   const isOutOfStock = stock === 0;
+  const categoryLabel = category ?? (tag ? tag.toUpperCase() : 'SHOP ITEM');
 
   return (
     <div
@@ -81,7 +82,7 @@ const ShopCard: React.FC<ShopCardProps> = ({
         {/* Category and Stock */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-white/60 text-xs uppercase tracking-wider">
-            {category}
+            {categoryLabel}
           </span>
           <span className={cn(
             "text-xs font-medium",

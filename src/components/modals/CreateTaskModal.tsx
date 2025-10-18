@@ -190,14 +190,15 @@ export default function CreateTaskModal({
       />
       
       <div className="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
-        <div 
-          className="bg-white rounded-[22px] w-full max-w-[1400px] max-h-[95vh] min-h-[700px] pointer-events-auto flex flex-col lg:flex-row"
+        <div
+          className="bg-white rounded-[22px] w-full max-w-[1400px] max-h-[95vh] min-h-[700px] pointer-events-auto flex flex-col lg:flex-row overflow-hidden"
           style={{ filter: 'none !important' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Left side - Form */}
-          <div className="flex-1 p-7 lg:pr-[21px] flex flex-col min-w-0 lg:min-w-[500px] overflow-y-auto">
-            <div className="mb-6">
+          <div className="flex-1 flex flex-col min-w-0 lg:min-w-[500px] overflow-hidden">
+            {/* Fixed Header */}
+            <div className="px-7 pt-7 pb-6 lg:pr-[21px] flex-shrink-0">
               <h2 className={cn("text-[#020202] text-[28px] font-semibold mb-2", Campton.className)}>
                 {mode === 'edit' ? 'Edit Task' : 'Create Task'}
               </h2>
@@ -206,17 +207,23 @@ export default function CreateTaskModal({
               </p>
             </div>
 
-            <GenericForm
-              config={formConfig}
-              onSubmit={handleFormSubmit}
-              onCancel={onClose}
-              onChange={handleFormChange}
-              isLoading={isLoading}
-              initialData={formData as unknown as Record<string, unknown>}
-              className="flex-1"
-              hideTitle={true}
-              hideBorder={true}
-            />
+            {/* Scrollable Form */}
+            <div className="flex-1 overflow-y-auto px-7 lg:pr-[21px]">
+              <GenericForm
+                config={{
+                  ...formConfig,
+                  submitLabel: mode === 'edit' ? 'Update Task' : 'Create Task'
+                }}
+                onSubmit={handleFormSubmit}
+                onCancel={onClose}
+                onChange={handleFormChange}
+                isLoading={isLoading}
+                initialData={formData as unknown as Record<string, unknown>}
+                className="flex-1"
+                hideTitle={true}
+                hideBorder={true}
+              />
+            </div>
           </div>
 
           {/* Right side - Preview */}
