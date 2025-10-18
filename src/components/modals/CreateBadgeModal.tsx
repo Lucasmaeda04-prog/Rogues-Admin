@@ -25,6 +25,7 @@ export interface BadgeFormData {
   description: string;
   goal: string;
   image: string;
+  roleName?: string;
   badgeId?: string;
 }
 
@@ -41,6 +42,7 @@ export default function CreateBadgeModal({
     description: '',
     goal: '',
     image: '',
+    roleName: '',
     badgeId: undefined
   });
   const { showSuccess, showError } = useToast()
@@ -56,6 +58,7 @@ export default function CreateBadgeModal({
         description: '',
         goal: '',
         image: '',
+        roleName: '',
         badgeId: undefined
       });
     }
@@ -84,9 +87,10 @@ export default function CreateBadgeModal({
       description: typeof data.description === 'string' ? data.description : '',
       goal: typeof data.goal === 'string' ? data.goal : '',
       image: typeof data.image === 'string' ? data.image : '',
+      roleName: typeof data.roleName === 'string' ? data.roleName : '',
       badgeId: typeof data.badgeId === 'string' ? data.badgeId : formData.badgeId
     };
-    
+
     // Update local state for preview in real-time
     setFormData(badgeData);
   };
@@ -97,9 +101,10 @@ export default function CreateBadgeModal({
       description: typeof data.description === 'string' ? data.description : '',
       goal: typeof data.goal === 'string' ? data.goal : '',
       image: typeof data.image === 'string' ? data.image : '',
+      roleName: typeof data.roleName === 'string' ? data.roleName : undefined,
       badgeId: formData.badgeId
     };
-    
+
     onSubmit(badgeData);
   };
 

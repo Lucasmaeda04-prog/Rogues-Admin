@@ -399,6 +399,14 @@ export const badgeFormConfig: FormConfig = {
       }
     },
     {
+      name: 'roleName',
+      label: 'Discord Role Name',
+      type: 'text',
+      placeholder: 'Enter Discord role name (optional)',
+      required: false,
+      description: 'The Discord role required to obtain this badge'
+    },
+    {
       name: 'image',
       label: 'Badge Image',
       type: 'image-upload',

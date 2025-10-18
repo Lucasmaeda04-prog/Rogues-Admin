@@ -100,6 +100,7 @@ export interface Badge {
   description: string | null
   goal?: string
   image: string
+  roleName?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -263,6 +264,7 @@ export interface CreateBadgeData {
   description?: string
   goal: string
   image?: string
+  roleName?: string
 }
 
 export interface CreateShopItemData {

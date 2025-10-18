@@ -287,6 +287,9 @@ export class ApiClient {
       formData.append('title', data.title);
       formData.append('description', data.description || '');
       formData.append('goal', data.goal);
+      if (data.roleName) {
+        formData.append('roleName', data.roleName);
+      }
 
       const url = `${this.baseUrl}/badge`
       const config = {

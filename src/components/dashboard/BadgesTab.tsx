@@ -54,7 +54,8 @@ export default function BadgesTab() {
         title: data.title,
         description: data.description,
         goal: data.goal,
-        image: data.image
+        image: data.image,
+        roleName: data.roleName
       }
 
       console.log('Sending to API:', badgeData)
@@ -101,9 +102,10 @@ export default function BadgesTab() {
       description: (badge.description as string) || '',
       goal: (badge.goal as string) || '',
       image: (badge.image as string) || '',
+      roleName: (badge.roleName as string) || '',
       badgeId: badge.badgeId as string
     }
-    
+
     setEditingBadge(editData)
     setModalMode('edit')
     setIsModalOpen(true)

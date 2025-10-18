@@ -24,15 +24,16 @@ export function useBadges() {
     description?: string
     goal?: string
     image?: string
+    roleName?: string
   }) => {
     try {
       await api.updateBadge(id, badgeData)
       await refetch()
       return { success: true }
     } catch (err) {
-      return { 
-        success: false, 
-        error: err instanceof Error ? err.message : 'Failed to update badge' 
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : 'Failed to update badge'
       }
     }
   }, [refetch])

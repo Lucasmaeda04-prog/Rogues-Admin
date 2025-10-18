@@ -30,16 +30,29 @@ export interface ShopItemFormData {
   roleName?: string;
 }
 
-export default function CreateShopItemModal({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
+export default function CreateShopItemModal({
+  isOpen,
+  onClose,
+  onSubmit,
   isLoading = false,
   editData = null,
   mode = 'create'
 }: CreateShopItemModalProps) {
   const { categories } = useShopCategories()
   const { badges } = useBadges()
+
+  const [formData, setFormData] = useState<ShopItemFormData>({
+    name: '',
+    description: '',
+    price: 0,
+    quantity: 0,
+    tag: '',
+    categoryId: 0,
+    image: '',
+    requiredBadgeId: '',
+    roleName: ''
+  });
+
   const badgeOptions = useMemo(() => {
     return [
       { value: '', label: 'No badge required' },
@@ -57,25 +70,19 @@ export default function CreateShopItemModal({
         }
       }
       if (field.name === 'roleName') {
+        // Hide roleName field for Shopify items (when tag is 'shopify')
+        const isShopifyItem = formData.tag === 'shopify'
         return {
           ...field,
-          disabled: mode === 'view'
+          disabled: mode === 'view' || isShopifyItem,
+          description: isShopifyItem
+            ? 'Role name is not available for Shopify items'
+            : 'Displayed only for Discord items. Leave empty for Shopify imports.'
         }
       }
       return field
     })
-  }), [badgeOptions, mode])
-  const [formData, setFormData] = useState<ShopItemFormData>({
-    name: '',
-    description: '',
-    price: 0,
-    quantity: 0,
-    tag: '',
-    categoryId: 0,
-    image: '',
-    requiredBadgeId: '',
-    roleName: ''
-  });
+  }), [badgeOptions, mode, formData.tag])
 
   // Update form data when editData changes
   useEffect(() => {
