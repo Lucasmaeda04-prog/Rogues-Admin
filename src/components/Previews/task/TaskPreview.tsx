@@ -144,7 +144,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
             >
               GO TO MISSION !
             </Button>
-            <Button
+            {/* <Button
               onClick={handleVerifyClick}
               loading={isVerifying}
               color="primary"
@@ -154,7 +154,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               )}
             >
               {isVerifying ? 'CHECKING...' : 'CHECK TASK'}
-            </Button>
+            </Button> */}
           </div>
         </div>
         </div>

@@ -61,15 +61,21 @@ export default function TasksTab() {
     console.log(`${modalMode === 'edit' ? 'Updating' : 'Creating'} task with form data:`, data)
     setIsLoading(true)
     
+    let deadlineValue: string | undefined = undefined;
+
+    if (data.taskType === 'daily') {
+      deadlineValue = undefined;
+    } else if (data.deadline) {
+      deadlineValue = convertToTimestamp(data.deadline); 
+    }
+
     try {
       // Preparar dados da task para API
       const taskData = {
         name: data.title,
         description: data.description,
         points: data.rewards,
-        deadline: data.taskType === 'daily' 
-          ? new Date().toISOString().slice(0, 19).replace('T', ' ') 
-          : convertToTimestamp(data.deadline || ''),
+        deadline: deadlineValue ? deadlineValue : '',
         taskCategoryId: data.taskCategoryId,
         isDaily: data.taskType === 'daily',
         link: data.link || '',
@@ -127,7 +133,7 @@ export default function TasksTab() {
       verificationSteps: (task.verificationSteps as string) || '',
       rewards: task.points as number,
       taskType: task.isDaily ? 'daily' : 'one-time',
-      deadline: task.isDaily ? '' : new Date(task.deadline as string).toLocaleDateString('pt-BR'),
+      deadline: task.isDaily ? '' : task.deadline ? new Date(task.deadline as string).toLocaleDateString('pt-BR') : '',
       taskCategoryId: task.taskCategoryId as number,
       socialMedia: socialMediaDerived,
       link: (task.link as string) || ''
@@ -479,7 +485,7 @@ export default function TasksTab() {
                       </span>
                     </TableCell>
                     <TableCell>{task.points} Points</TableCell>
-                    <TableCell>{new Date(task.deadline).toLocaleString('pt-BR')}</TableCell>
+                    <TableCell>{task.deadline ? new Date(task.deadline).toLocaleString('pt-BR') : 'N/A'}</TableCell>
                     <TableCell>{task._count?.taskCompletions || 0}</TableCell>
                     <TableCell title={task.link || 'N/A'}>
                       {task.link ? (
