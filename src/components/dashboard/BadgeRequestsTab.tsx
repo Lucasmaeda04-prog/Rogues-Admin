@@ -13,6 +13,7 @@ export default function BadgeRequestsTab() {
   const [processingRequest, setProcessingRequest] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedRequest, setSelectedRequest] = useState<BadgeRequest | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>('all')
 
   const handleOpenModal = (request: BadgeRequest) => {
     setSelectedRequest(request)
@@ -104,6 +105,12 @@ export default function BadgeRequestsTab() {
     }
   }
 
+  // Filter badge requests based on status
+  const filteredBadgeRequests = badgeRequests.filter(request => {
+    if (statusFilter === 'all') return true
+    return request.status?.toUpperCase() === statusFilter.toUpperCase()
+  })
+
   if (loading) {
     return <div className="flex justify-center py-8">Carregando solicitações de badges...</div>
   }
@@ -116,13 +123,19 @@ export default function BadgeRequestsTab() {
     <div className="animate-fadeIn">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-4">
-          <h2 className="text-lg font-semibold text-gray-900">Badge Requests</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            Badge Requests ({filteredBadgeRequests.length})
+          </h2>
           <div className="flex space-x-2">
-            <select className="border border-gray-300 rounded px-3 py-1 text-sm">
-              <option>All Status</option>
-              <option>Pending</option>
-              <option>Approved</option>
-              <option>Rejected</option>
+            <select
+              className="border border-gray-300 rounded px-3 py-1 text-sm"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
             </select>
           </div>
         </div>
@@ -144,14 +157,17 @@ export default function BadgeRequestsTab() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {badgeRequests.length === 0 ? (
+            {filteredBadgeRequests.length === 0 ? (
               <tr>
                 <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
-                  Nenhuma solicitação de badge encontrada
+                  {statusFilter === 'all'
+                    ? 'Nenhuma solicitação de badge encontrada'
+                    : `Nenhuma solicitação com status "${getStatusLabel(statusFilter)}"`
+                  }
                 </td>
               </tr>
             ) : (
-              badgeRequests.map((request, index) => (
+              filteredBadgeRequests.map((request, index) => (
                 <tr key={request.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm text-gray-900">#{index + 1}</td>
                   <td className="px-4 py-3 text-sm text-gray-900">{request.User?.name || '-'}</td>
@@ -196,10 +212,10 @@ export default function BadgeRequestsTab() {
         </table>
       </div>
 
-      {badgeRequests.length > 0 && (
+      {filteredBadgeRequests.length > 0 && (
         <div className="mt-4 flex justify-between items-center text-sm text-gray-600">
           <span>
-            Mostrando {badgeRequests.length} solicitação(ões)
+            Mostrando {filteredBadgeRequests.length} de {badgeRequests.length} solicitação(ões)
           </span>
         </div>
       )}

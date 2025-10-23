@@ -8,6 +8,7 @@ import { createTaskFormConfig } from '@/components/forms/form-configs';
 import { useTaskTypes } from '@/hooks';
 import TaskPreview from '@/components/Previews/task/TaskPreview';
 import TaskList from '@/components/Previews/task/ListTask';
+import { convertToTimestamp, isValidBrazilianDate } from '@/lib/dateUtils';
 
 interface CreateTaskModalProps {
   isOpen: boolean;
@@ -96,7 +97,7 @@ export default function CreateTaskModal({
   // Transform verification steps for preview
   const getVerificationStepsArray = useCallback(() => {
     if (!formData.verificationSteps) return [];
-    
+
     return formData.verificationSteps
       .split('\n')
       .filter(step => step.trim())
@@ -106,6 +107,24 @@ export default function CreateTaskModal({
       })
       .filter(step => step); // Remove empty strings after processing
   }, [formData.verificationSteps]);
+
+  // Helper function to convert Brazilian date format to Date for preview
+  const getPreviewDeadline = useCallback(() => {
+    if (!formData.deadline || formData.deadline.trim() === '') {
+      return undefined;
+    }
+
+    // Check if it's a valid Brazilian date format
+    if (isValidBrazilianDate(formData.deadline)) {
+      // Convert to MySQL timestamp then to Date
+      const timestamp = convertToTimestamp(formData.deadline);
+      return new Date(timestamp);
+    }
+
+    // If already a valid date string, try to parse it
+    const parsed = new Date(formData.deadline);
+    return isNaN(parsed.getTime()) ? undefined : parsed;
+  }, [formData.deadline]);
 
   useEffect(() => {
     if (isOpen) {
@@ -168,7 +187,7 @@ export default function CreateTaskModal({
     rewards: formData.rewards || 40,
     verificationSteps: getVerificationStepsArray(),
     socialMedia: (formData.socialMedia === 'discord' || formData.socialMedia === 'X') ? formData.socialMedia as 'discord' | 'X' : 'discord' as 'discord' | 'X',
-    deadline: formData.deadline
+    deadline: getPreviewDeadline()
   };
 
   // Create preview data for TaskList
@@ -178,7 +197,7 @@ export default function CreateTaskModal({
     rewards: formData.rewards || 40,
     initialState: 'claim' as const,
     socialMedia: (formData.socialMedia === 'discord' || formData.socialMedia === 'X') ? formData.socialMedia as 'discord' | 'X' : 'discord' as 'discord' | 'X',
-    deadline: (formData.taskType === 'daily' || !formData.deadline) ? undefined : formData.deadline, // Só mostra deadline se não for daily E tiver deadline
+    deadline: (formData.taskType === 'daily' || !formData.deadline) ? undefined : getPreviewDeadline(), // Só mostra deadline se não for daily E tiver deadline
     isDaily: formData.taskType === 'daily'
   };
 

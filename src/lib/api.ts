@@ -9,12 +9,24 @@ import type {
 export class ApiClient {
   private baseUrl: string
   private getAuthHeaders: () => Record<string, string>
+  private handleUnauthorized: () => void
 
   constructor(baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080') {
     this.baseUrl = baseUrl
     this.getAuthHeaders = (): Record<string, string> => {
       const token = localStorage.getItem('token')
       return token ? { 'Authorization': `Bearer ${token}` } : {}
+    }
+    this.handleUnauthorized = () => {
+      // Clear invalid token
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        // Store session expired flag for login page to show message
+        sessionStorage.setItem('sessionExpired', 'true')
+        // Redirect to login page
+        window.location.href = '/login'
+      }
     }
   }
 
@@ -52,7 +64,13 @@ export class ApiClient {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('API Error Response:', errorText)
-      
+
+      // Handle 401 Unauthorized - token expired or invalid
+      if (response.status === 401) {
+        this.handleUnauthorized()
+        throw new Error('Your session has expired. Please log in again.')
+      }
+
       let errorMessage = `HTTP error! status: ${response.status}`
       try {
         const errorData = JSON.parse(errorText)
@@ -61,7 +79,7 @@ export class ApiClient {
         // If not JSON, use the text as error message
         errorMessage = errorText || errorMessage
       }
-      
+
       throw new Error(errorMessage)
     }
 
@@ -200,7 +218,13 @@ export class ApiClient {
       if (!apiResponse.ok) {
         const errorText = await apiResponse.text()
         console.error('API Error Response:', errorText)
-        
+
+        // Handle 401 Unauthorized - token expired or invalid
+        if (apiResponse.status === 401) {
+          this.handleUnauthorized()
+          throw new Error('Your session has expired. Please log in again.')
+        }
+
         let errorMessage = `HTTP error! status: ${apiResponse.status}`
         try {
           const errorData = JSON.parse(errorText)
@@ -208,7 +232,7 @@ export class ApiClient {
         } catch {
           errorMessage = errorText || errorMessage
         }
-        
+
         throw new Error(errorMessage)
       }
 
@@ -222,7 +246,62 @@ export class ApiClient {
     })
   }
 
-  async updateShopItem(id: string, data: Partial<CreateShopItemData>): Promise<{ message: string; shopItem: ShopItem }> {
+  async updateShopItem(id: string, data: Partial<CreateShopItemData> & { imageUrl?: string }): Promise<{ message: string; shopItem: ShopItem }> {
+    // If there's a new image in base64, use FormData to avoid payload too large
+    // Check both 'image' and 'imageUrl' fields (ShopTab sends imageUrl)
+    const imageData = data.image || (data as { imageUrl?: string }).imageUrl;
+    if (imageData && imageData.startsWith('data:')) {
+      const formData = new FormData();
+
+      // Convert base64 to blob
+      const imageResponse = await fetch(imageData);
+      const blob = await imageResponse.blob();
+
+      formData.append('image', blob, 'image.jpg');
+      if (data.name) formData.append('name', data.name);
+      if (data.description) formData.append('description', data.description);
+      if (data.price !== undefined) formData.append('price', data.price.toString());
+      if (data.tag !== undefined) formData.append('tag', data.tag);
+      if (data.categoryId !== undefined) formData.append('categoryId', data.categoryId.toString());
+      if (data.available !== undefined) formData.append('available', data.available.toString());
+      if (data.quantity !== undefined) formData.append('quantity', data.quantity.toString());
+      if (data.requiredBadgeId !== undefined) {
+        formData.append('requiredBadgeId', data.requiredBadgeId || '');
+      }
+      if (data.roleName !== undefined) {
+        formData.append('roleName', data.roleName || '');
+      }
+
+      const url = `${this.baseUrl}/shop/item/${id}`
+      const config = {
+        method: 'PUT',
+        headers: {
+          ...this.getAuthHeaders(),
+        },
+        body: formData,
+      }
+
+      const apiResponse = await fetch(url, config)
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text()
+        console.error('API Error Response:', errorText)
+
+        let errorMessage = `HTTP error! status: ${apiResponse.status}`
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.message || errorMessage
+        } catch {
+          errorMessage = errorText || errorMessage
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      return apiResponse.json()
+    }
+
+    // Fallback to JSON when no new image
     return this.request<{ message: string; shopItem: ShopItem }>(`/shop/item/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -320,7 +399,13 @@ export class ApiClient {
       if (!apiResponse.ok) {
         const errorText = await apiResponse.text()
         console.error('API Error Response:', errorText)
-        
+
+        // Handle 401 Unauthorized - token expired or invalid
+        if (apiResponse.status === 401) {
+          this.handleUnauthorized()
+          throw new Error('Your session has expired. Please log in again.')
+        }
+
         let errorMessage = `HTTP error! status: ${apiResponse.status}`
         try {
           const errorData = JSON.parse(errorText)
@@ -328,7 +413,7 @@ export class ApiClient {
         } catch {
           errorMessage = errorText || errorMessage
         }
-        
+
         throw new Error(errorMessage)
       }
 
@@ -343,6 +428,54 @@ export class ApiClient {
   }
 
   async updateBadge(id: string, data: Partial<CreateBadgeData>): Promise<{ message: string; badge: Badge }> {
+    // If there's a new image in base64, use FormData to avoid payload too large
+    if (data.image && data.image.startsWith('data:')) {
+      const formData = new FormData();
+
+      // Convert base64 to blob
+      const imageResponse = await fetch(data.image);
+      const blob = await imageResponse.blob();
+
+      // Detect file extension from base64
+      const mimeMatch = data.image.match(/^data:image\/(\w+);base64,/);
+      const ext = mimeMatch ? mimeMatch[1] : 'jpg';
+
+      formData.append('image', blob, `badge.${ext}`);
+      if (data.title) formData.append('title', data.title);
+      if (data.description) formData.append('description', data.description);
+      if (data.goal) formData.append('goal', data.goal);
+      if (data.roleName) formData.append('roleName', data.roleName);
+
+      const url = `${this.baseUrl}/badge/${id}`
+      const config = {
+        method: 'PUT',
+        headers: {
+          ...this.getAuthHeaders(),
+        },
+        body: formData,
+      }
+
+      const apiResponse = await fetch(url, config)
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text()
+        console.error('API Error Response:', errorText)
+
+        let errorMessage = `HTTP error! status: ${apiResponse.status}`
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.message || errorMessage
+        } catch {
+          errorMessage = errorText || errorMessage
+        }
+
+        throw new Error(errorMessage)
+      }
+
+      return apiResponse.json()
+    }
+
+    // Fallback to JSON when no new image
     return this.request<{ message: string; badge: Badge }>(`/badge/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

@@ -10,8 +10,18 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [useMockAuth, setUseMockAuth] = useState(false)
+  const [sessionExpiredMessage, setSessionExpiredMessage] = useState<string | null>(null)
   const { login, loading, error, isAuthenticated } = useAuth()
   const router = useRouter()
+
+  // Check for session expiration message
+  useEffect(() => {
+    const sessionExpired = sessionStorage.getItem('sessionExpired')
+    if (sessionExpired === 'true') {
+      setSessionExpiredMessage('Your session has expired. Please log in again.')
+      sessionStorage.removeItem('sessionExpired')
+    }
+  }, [])
 
   // Redirect if already logged in
   useEffect(() => {
@@ -22,7 +32,10 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
+    // Clear session expired message when user tries to login
+    setSessionExpiredMessage(null)
+
     if (useMockAuth) {
       // Mock authentication - temporary fallback
       localStorage.setItem('token', 'mock-token')
@@ -35,10 +48,10 @@ export default function LoginPage() {
       router.push('/dashboard')
       return
     }
-    
+
     try {
       const result = await login(email, password)
-      
+
       if (!result.success && result.error) {
         console.error('Login failed:', result.error)
       }
@@ -84,9 +97,9 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {error && (
+          {(error || sessionExpiredMessage) && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-              {error}
+              {sessionExpiredMessage || error}
             </div>
           )}
 

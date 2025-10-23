@@ -60,27 +60,30 @@ export default function CreateShopItemModal({
 
   const formConfig = useMemo(() => ({
     ...shopItemFormConfig,
-    fields: shopItemFormConfig.fields.map(field => {
-      if (field.name === 'requiredBadgeId') {
-        return {
-          ...field,
-          options: badgeOptions
+    fields: shopItemFormConfig.fields
+      .map(field => {
+        if (field.name === 'requiredBadgeId') {
+          return {
+            ...field,
+            options: badgeOptions
+          }
         }
-      }
-      if (field.name === 'roleName') {
-        // Hide roleName field for Shopify items (categoryId === 2)
-        const isShopifyItem = formData.categoryId === 2
-        return {
-          ...field,
-          disabled: mode === 'view' || isShopifyItem,
-          description: isShopifyItem
-            ? 'Role name is not available for Shopify items'
-            : 'Displayed only for Discord items. Leave empty for Shopify imports.'
+        if (field.name === 'name') {
+          // Change label to "Discord Role" for Discord items (categoryId === 1)
+          const isDiscordItem = formData.categoryId === 1
+          return {
+            ...field,
+            label: isDiscordItem ? 'Discord Role' : 'Item Name'
+          }
         }
-      }
-      return field
-    })
-  }), [badgeOptions, mode, formData.categoryId])
+        if (field.name === 'roleName') {
+          // Hide roleName field completely (it will be auto-filled with the name field)
+          return null
+        }
+        return field
+      })
+      .filter((field): field is NonNullable<typeof field> => field !== null)
+  }), [badgeOptions, formData.categoryId])
 
   // Update form data when editData changes
   useEffect(() => {

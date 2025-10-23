@@ -10,11 +10,11 @@ export function convertToTimestamp(dateString: string): string {
   }
 
   try {
-    // Remove espaços extras
-    const cleanDate = dateString.trim();
-    
-    // Regex para capturar DD/MM/YYYY - HH:MM ou DD/MM/YYYY
-    const dateTimeRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*-\s*(\d{1,2}):(\d{2}))?$/;
+    // Remove espaços extras e normaliza
+    const cleanDate = dateString.trim().replace(/\s+/g, ' ');
+
+    // Regex para capturar DD/MM/YYYY - HH:MM ou DD/MM/YYYY (com ou sem espaços ao redor do "-")
+    const dateTimeRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*-?\s*(\d{1,2}):(\d{1,2}))?$/;
     const match = cleanDate.match(dateTimeRegex);
     
     if (!match) {
@@ -86,34 +86,38 @@ export function isValidBrazilianDate(dateString: string): boolean {
   if (!dateString || dateString.trim() === '') {
     return true; // Data vazia é considerada válida (opcional)
   }
-  
-  const dateTimeRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*-\s*(\d{1,2}):(\d{2}))?$/;
-  const match = dateString.trim().match(dateTimeRegex);
-  
+
+  // Normalizar espaços e remover múltiplos espaços
+  const normalized = dateString.trim().replace(/\s+/g, ' ');
+
+  // Aceitar tanto "DD/MM/YYYY - HH:MM" quanto "DD/MM/YYYY-HH:MM" (com ou sem espaços)
+  const dateTimeRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*-?\s*(\d{1,2}):(\d{1,2}))?$/;
+  const match = normalized.match(dateTimeRegex);
+
   if (!match) {
     return false;
   }
-  
+
   const [, day, month, year, hours = '0', minutes = '0'] = match;
-  
+
   // Validações básicas
   const dayNum = parseInt(day);
   const monthNum = parseInt(month);
   const yearNum = parseInt(year);
   const hoursNum = parseInt(hours);
   const minutesNum = parseInt(minutes);
-  
+
   if (dayNum < 1 || dayNum > 31) return false;
   if (monthNum < 1 || monthNum > 12) return false;
   if (yearNum < 2000 || yearNum > 2100) return false;
   if (hoursNum < 0 || hoursNum > 23) return false;
   if (minutesNum < 0 || minutesNum > 59) return false;
-  
+
   // Verificar se a data é válida criando um objeto Date
   try {
     const date = new Date(yearNum, monthNum - 1, dayNum, hoursNum, minutesNum);
-    return date.getFullYear() === yearNum && 
-           date.getMonth() === monthNum - 1 && 
+    return date.getFullYear() === yearNum &&
+           date.getMonth() === monthNum - 1 &&
            date.getDate() === dayNum;
   } catch {
     return false;

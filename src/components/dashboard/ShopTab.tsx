@@ -143,6 +143,8 @@ export default function ShopTab() {
           name: data.name,
           description: data.description,
           price: data.price,
+          quantity: data.quantity,
+          tag: data.tag,
           imageUrl: data.image,
           categoryId: data.categoryId,
           requiredBadgeId: data.requiredBadgeId && data.requiredBadgeId.length > 0 ? data.requiredBadgeId : null,

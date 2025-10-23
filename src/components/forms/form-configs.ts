@@ -223,8 +223,38 @@ export function createTaskFormConfig(taskTypes: TaskCategory[] = []): FormConfig
       name: 'link',
       label: 'Task Link',
       type: 'text',
-      placeholder: 'https://discord.gg/example',
-      description: 'Optional: Link where users can complete the task'
+      placeholder: 'https://twitter.com/example',
+      description: 'Required for X (Twitter) tasks, optional for Discord',
+      validation: {
+        custom: (value: unknown, formData?: Record<string, unknown>) => {
+          const socialMedia = formData?.socialMedia;
+
+          // Se a plataforma for X (Twitter), o link é obrigatório
+          if (socialMedia === 'X') {
+            if (typeof value !== 'string' || !value || value.trim() === '') {
+              return 'Link is required for X (Twitter) tasks';
+            }
+
+            // Validar se é uma URL válida
+            try {
+              new URL(value);
+            } catch {
+              return 'Please enter a valid URL';
+            }
+          }
+
+          // Se tiver valor (independente da plataforma), validar formato
+          if (value && typeof value === 'string' && value.trim() !== '') {
+            try {
+              new URL(value);
+            } catch {
+              return 'Please enter a valid URL';
+            }
+          }
+
+          return null;
+        }
+      }
     },
     {
       name: 'socialMedia',
@@ -263,7 +293,7 @@ export const shopItemFormConfig: FormConfig = {
   fields: [
     {
       name: 'name',
-      label: 'Item Name',
+      label: 'Item Name', // Will be dynamically changed to "Discord Role" in the modal
       type: 'text',
       placeholder: 'Enter your name',
       required: true,

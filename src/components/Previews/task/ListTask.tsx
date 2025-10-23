@@ -6,13 +6,13 @@ import Image from 'next/image';
 import { Button } from '@/components/Button';
 import { IconConfirmed, IconDiscord, DailyTaskIcon, OneTimeTaskIcon } from '@/components/Icons';
 import { Campton } from '@/lib/fonts';
-import { formatDeadline } from '@/lib/taskUtils';
+import { formatDeadline, isDeadlinePassed } from '@/lib/taskUtils';
 
 export interface TaskProps {
   title: string;
   description: string;
   rewards: number;
-  initialState: 'claim' | 'done';
+  initialState: 'claim' | 'done' | 'expired';
   onClaim?: () => void;
   className?: string;
   icon?: React.ReactNode;
@@ -33,13 +33,14 @@ const TaskList: React.FC<TaskProps> = ({
   socialMedia,
   isDaily,
 }) => {
-  const [state] = useState<'claim' | 'done'>(initialState);
+  const [state] = useState<'claim' | 'done' | 'expired'>(initialState);
 
   const handleClaimClick = () => {
     onClaim?.();
   };
 
   const isCompleted = state === 'done';
+  const isExpired = deadline ? isDeadlinePassed(deadline) : false;
 
   const getSocialMediaCircleColor = () => {
     switch (socialMedia) {
@@ -92,17 +93,25 @@ const TaskList: React.FC<TaskProps> = ({
           <div className="flex items-center gap-3 max-sm:gap-2 mt-3 max-sm:mt-2">
             {/* Deadline badge */}
             {deadline && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ backgroundColor: '#C8C8C8' }}>
-  
-                <Image 
-                  src="/assets/clock.svg" 
-                  alt="Clock" 
+              <div
+                className="flex items-center gap-1.5 px-2 py-1 rounded-full"
+                style={{ backgroundColor: isExpired ? '#EE5F67' : '#C8C8C8' }}
+              >
+                <Image
+                  src="/assets/clock.svg"
+                  alt="Clock"
                   width={12}
                   height={12}
                   className="w-3 h-3"
                 />
-                <span className={cn("text-black text-xs max-sm:text-[10px] font-light", Campton.className)}>
-                  Deadline: {formatDeadline(deadline)}
+                <span
+                  className={cn(
+                    "text-xs max-sm:text-[10px] font-light",
+                    isExpired ? "text-white" : "text-black",
+                    Campton.className
+                  )}
+                >
+                  {isExpired ? 'EXPIRED' : `Deadline: ${formatDeadline(deadline)}`}
                 </span>
               </div>
             )}
