@@ -344,7 +344,13 @@ export default function GenericForm({
       )}
       
       {field.description && (
-        <p className={cn("text-[#949191] text-xs", Campton.className)}>
+        <p className={cn(
+          "text-xs",
+          field.description.startsWith('⚠️') || field.description.startsWith('IMPORTANT')
+            ? "text-orange-600 font-medium bg-orange-50 border border-orange-200 rounded-md px-3 py-2"
+            : "text-[#949191]",
+          Campton.className
+        )}>
           {field.description}
         </p>
       )}

@@ -51,7 +51,7 @@ export function useAuth() {
         }
       }
     } catch {
-      // Token inválido, limpar localStorage
+      // Invalid token, clear localStorage
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       setUser(null)
@@ -88,7 +88,7 @@ export function useAuth() {
     try {
       await api.logout()
     } catch {
-      // Ignorar erros de logout da API
+      // Ignore API logout errors
     } finally {
       localStorage.removeItem('token')
       localStorage.removeItem('user')

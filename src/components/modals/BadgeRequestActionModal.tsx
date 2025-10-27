@@ -58,7 +58,7 @@ export default function BadgeRequestActionModal({
           setBadgeDetails(badge);
         } catch (error) {
           console.error('Failed to fetch badge details:', error);
-          showError('Erro ao carregar badge', 'Não foi possível carregar os detalhes da badge');
+          showError('Error loading badge', 'Unable to load badge details');
           setBadgeDetails(null);
         } finally {
           setLoadingBadge(false);
@@ -84,17 +84,17 @@ export default function BadgeRequestActionModal({
 
   const handleApprove = async () => {
     if (!request) return;
-    
+
     setProcessing('approve');
     try {
       const result = await onApprove(request.id);
       if (result.success) {
         onClose();
       } else {
-        showError('Erro ao aprovar', result.error || 'Falha ao aprovar solicitação');
+        showError('Error approving', result.error || 'Failed to approve request');
       }
     } catch {
-      showError('Erro inesperado', 'Ocorreu um erro ao aprovar a solicitação');
+      showError('Unexpected error', 'An error occurred while approving the request');
     } finally {
       setProcessing(null);
     }
@@ -102,17 +102,17 @@ export default function BadgeRequestActionModal({
 
   const handleReject = async () => {
     if (!request) return;
-    
+
     setProcessing('reject');
     try {
       const result = await onReject(request.id);
       if (result.success) {
         onClose();
       } else {
-        showError('Erro ao rejeitar', result.error || 'Falha ao rejeitar solicitação');
+        showError('Error rejecting', result.error || 'Failed to reject request');
       }
     } catch {
-      showError('Erro inesperado', 'Ocorreu um erro ao rejeitar a solicitação');
+      showError('Unexpected error', 'An error occurred while rejecting the request');
     } finally {
       setProcessing(null);
     }
@@ -122,7 +122,7 @@ export default function BadgeRequestActionModal({
     try {
       return new Date(dateString).toLocaleString('pt-BR');
     } catch {
-      return 'Data inválida';
+      return 'Invalid date';
     }
   };
 
@@ -143,13 +143,13 @@ export default function BadgeRequestActionModal({
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'PENDING':
-        return 'Pendente';
+        return 'Pending';
       case 'APPROVED':
-        return 'Aprovado';
+        return 'Approved';
       case 'ACCEPTED':
-        return 'Aceito';
+        return 'Accepted';
       case 'REJECTED':
-        return 'Rejeitado';
+        return 'Rejected';
       default:
         return status;
     }
@@ -230,10 +230,10 @@ export default function BadgeRequestActionModal({
               {/* User Information */}
               <div>
                 <label className={cn("block text-sm font-medium text-gray-700 mb-2", Campton.className)}>
-                  Usuário
+                  User
                 </label>
                 <p className={cn("text-gray-900", Campton.className)}>
-                  {request.User?.name || 'Usuário não identificado'}
+                  {request.User?.name || 'Unidentified user'}
                 </p>
               </div>
 
@@ -250,19 +250,19 @@ export default function BadgeRequestActionModal({
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
                       <span className={cn("ml-2 text-gray-600", Campton.className)}>
-                        Carregando detalhes da badge...
+                        Loading badge details...
                       </span>
                     </div>
                   ) : (
                     <>
                       <h3 className={cn("font-semibold text-gray-900", Campton.className)}>
-                        {badgeDetails?.title || request.Badge?.title || 'Badge não identificado'}
+                        {badgeDetails?.title || request.Badge?.title || 'Unidentified badge'}
                       </h3>
-                      
+
                       {(badgeDetails?.description || request.Badge?.description) && (
                         <div>
                           <h4 className={cn("text-sm font-medium text-gray-700 mb-1", Campton.className)}>
-                            Descrição:
+                            Description:
                           </h4>
                           <p className={cn("text-gray-600", Campton.className)}>
                             {badgeDetails?.description || request.Badge?.description}
@@ -274,7 +274,7 @@ export default function BadgeRequestActionModal({
                       {(badgeDetails?.goal || request.Badge?.goal) && (
                         <div>
                           <h4 className={cn("text-sm font-medium text-gray-700 mb-1", Campton.className)}>
-                            Objetivo:
+                            Goal:
                           </h4>
                           <p className={cn("text-gray-600", Campton.className)}>
                             {badgeDetails?.goal || request.Badge?.goal}
@@ -290,7 +290,7 @@ export default function BadgeRequestActionModal({
               {attachments.length > 0 && (
                 <div>
                   <label className={cn("block text-sm font-medium text-gray-700 mb-2", Campton.className)}>
-                    Anexos ({attachments.length})
+                    Attachments ({attachments.length})
                   </label>
                   <div className="bg-gray-50 rounded-lg p-4 space-y-3">
                     {attachments.map((att, idx) => (
@@ -311,14 +311,14 @@ export default function BadgeRequestActionModal({
                             rel="noopener noreferrer"
                             className="px-3 py-1.5 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-md transition-colors"
                           >
-                            Visualizar
+                            View
                           </a>
                           <a
                             href={resolveFileUrl(att.fileUrl)}
                             download={att.filename}
                             className="px-3 py-1.5 text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                           >
-                            Baixar
+                            Download
                           </a>
                         </div>
                       </div>
@@ -331,7 +331,7 @@ export default function BadgeRequestActionModal({
               {request.message && (
                 <div>
                   <label className={cn("block text-sm font-medium text-gray-700 mb-2", Campton.className)}>
-                    Mensagem da Solicitação
+                    Request Message
                   </label>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className={cn("text-gray-900", Campton.className)}>
@@ -345,7 +345,7 @@ export default function BadgeRequestActionModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className={cn("block text-sm font-medium text-gray-700 mb-2", Campton.className)}>
-                    Data da Solicitação
+                    Request Date
                   </label>
                   <p className={cn("text-gray-600", Campton.className)}>
                     {formatDate(request.createdAt)}
@@ -353,7 +353,7 @@ export default function BadgeRequestActionModal({
                 </div>
                 <div>
                   <label className={cn("block text-sm font-medium text-gray-700 mb-2", Campton.className)}>
-                    Última Atualização
+                    Last Update
                   </label>
                   <p className={cn("text-gray-600", Campton.className)}>
                     {formatDate(request.updatedAt)}
@@ -365,7 +365,7 @@ export default function BadgeRequestActionModal({
               {request.Admin && (
                 <div>
                   <label className={cn("block text-sm font-medium text-gray-700 mb-2", Campton.className)}>
-                    Admin Responsável
+                    Responsible Admin
                   </label>
                   <p className={cn("text-gray-600", Campton.className)}>
                     {request.Admin.name} ({request.Admin.email})
@@ -384,7 +384,7 @@ export default function BadgeRequestActionModal({
                   disabled={processing !== null || isLoading}
                   className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
-                  Cancelar
+                  Cancel
                 </button>
                 <button
                   onClick={handleReject}
@@ -397,10 +397,10 @@ export default function BadgeRequestActionModal({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Rejeitando...
+                      Rejecting...
                     </>
                   ) : (
-                    'Rejeitar'
+                    'Reject'
                   )}
                 </button>
                 <button
@@ -414,10 +414,10 @@ export default function BadgeRequestActionModal({
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      Aprovando...
+                      Approving...
                     </>
                   ) : (
-                    'Aprovar'
+                    'Approve'
                   )}
                 </button>
               </div>
@@ -431,7 +431,7 @@ export default function BadgeRequestActionModal({
                   onClick={onClose}
                   className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
                 >
-                  Fechar
+                  Close
                 </button>
               </div>
             </div>

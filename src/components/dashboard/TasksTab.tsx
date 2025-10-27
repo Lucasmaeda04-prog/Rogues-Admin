@@ -100,22 +100,22 @@ export default function TasksTab() {
       if (result.success) {
         console.log(`Task ${modalMode === 'edit' ? 'updated' : 'created'} successfully`)
         showSuccess(
-          `Task ${modalMode === 'edit' ? 'atualizada' : 'criada'}!`,
-          `Task "${data.title}" foi ${modalMode === 'edit' ? 'atualizada' : 'criada'} com sucesso`
+          `Task ${modalMode === 'edit' ? 'updated' : 'created'}!`,
+          `Task "${data.title}" was ${modalMode === 'edit' ? 'updated' : 'created'} successfully`
         )
         handleCloseModal()
       } else {
         console.error(`Error ${modalMode === 'edit' ? 'updating' : 'creating'} task:`, result.error)
         showError(
-          `Erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} task`,
+          `Error ${modalMode === 'edit' ? 'updating' : 'creating'} task`,
           result.error
         )
       }
     } catch (error) {
       console.error('Unexpected error:', error)
       showError(
-        'Erro inesperado',
-        `Ocorreu um erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} a task`
+        'Unexpected error',
+        `An error occurred while ${modalMode === 'edit' ? 'updating' : 'creating'} the task`
       )
     } finally {
       setIsLoading(false)
@@ -162,22 +162,22 @@ export default function TasksTab() {
       if (result.success) {
         console.log('Task deleted successfully')
         showSuccess(
-          'Task excluída!',
-          `Task "${deleteModal.taskName}" foi excluída com sucesso`
+          'Task deleted!',
+          `Task "${deleteModal.taskName}" was deleted successfully`
         )
         setDeleteModal({ isOpen: false })
       } else {
         console.error('Error deleting task:', result.error)
         showError(
-          'Erro ao excluir task',
+          'Error deleting task',
           result.error
         )
       }
     } catch (error) {
       console.error('Unexpected error:', error)
       showError(
-        'Erro inesperado',
-        'Ocorreu um erro ao excluir a task'
+        'Unexpected error',
+        'An error occurred while deleting the task'
       )
     } finally {
       setIsLoading(false)

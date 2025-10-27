@@ -31,16 +31,16 @@ export default function BadgeRequestsTab() {
       const result = await approveRequest(badgeRequestId)
       if (result.success) {
         console.log('Badge request approved successfully')
-        showSuccess('Solicitação aprovada!', 'A solicitação de badge foi aprovada com sucesso')
+        showSuccess('Request approved!', 'The badge request was approved successfully')
       } else {
         console.error('Error approving badge request:', result.error)
-        showError('Erro ao aprovar', result.error || 'Falha ao aprovar solicitação')
+        showError('Error approving request', result.error || 'Failed to approve request')
       }
       return result
     } catch (error) {
       console.error('Unexpected error:', error)
-      showError('Erro inesperado', 'Ocorreu um erro ao aprovar a solicitação')
-      return { success: false, error: 'Erro inesperado' }
+      showError('Unexpected error', 'An error occurred while approving the request')
+      return { success: false, error: 'Unexpected error' }
     } finally {
       setProcessingRequest(null)
     }
@@ -52,16 +52,16 @@ export default function BadgeRequestsTab() {
       const result = await rejectRequest(badgeRequestId)
       if (result.success) {
         console.log('Badge request rejected successfully')
-        showSuccess('Solicitação rejeitada!', 'A solicitação de badge foi rejeitada com sucesso')
+        showSuccess('Request rejected!', 'The badge request was rejected successfully')
       } else {
         console.error('Error rejecting badge request:', result.error)
-        showError('Erro ao rejeitar', result.error || 'Falha ao rejeitar solicitação')
+        showError('Error rejecting request', result.error || 'Failed to reject request')
       }
       return result
     } catch (error) {
       console.error('Unexpected error:', error)
-      showError('Erro inesperado', 'Ocorreu um erro ao rejeitar a solicitação')
-      return { success: false, error: 'Erro inesperado' }
+      showError('Unexpected error', 'An error occurred while rejecting the request')
+      return { success: false, error: 'Unexpected error' }
     } finally {
       setProcessingRequest(null)
     }
@@ -72,7 +72,7 @@ export default function BadgeRequestsTab() {
     try {
       return new Date(dateString).toLocaleString('pt-BR')
     } catch {
-      return 'Data inválida'
+      return 'Invalid date'
     }
   }
 
@@ -93,15 +93,15 @@ export default function BadgeRequestsTab() {
   const getStatusLabel = (status: string | undefined) => {
     switch (status) {
       case 'PENDING':
-        return 'Pendente'
+        return 'Pending'
       case 'APPROVED':
-        return 'Aprovado'
+        return 'Approved'
       case 'ACCEPTED':
-        return 'Aceito'
+        return 'Accepted'
       case 'REJECTED':
-        return 'Rejeitado'
+        return 'Rejected'
       default:
-        return status || 'Desconhecido'
+        return status || 'Unknown'
     }
   }
 
@@ -112,11 +112,11 @@ export default function BadgeRequestsTab() {
   })
 
   if (loading) {
-    return <div className="flex justify-center py-8">Carregando solicitações de badges...</div>
+    return <div className="flex justify-center py-8">Loading badge requests...</div>
   }
 
   if (error) {
-    return <div className="text-red-600 py-8">Erro ao carregar solicitações: {error}</div>
+    return <div className="text-red-600 py-8">Error loading requests: {error}</div>
   }
 
   return (
@@ -161,8 +161,8 @@ export default function BadgeRequestsTab() {
               <tr>
                 <td colSpan={9} className="px-4 py-8 text-center text-gray-500">
                   {statusFilter === 'all'
-                    ? 'Nenhuma solicitação de badge encontrada'
-                    : `Nenhuma solicitação com status "${getStatusLabel(statusFilter)}"`
+                    ? 'No badge requests found'
+                    : `No requests with status "${getStatusLabel(statusFilter)}"`
                   }
                 </td>
               </tr>
@@ -195,10 +195,10 @@ export default function BadgeRequestsTab() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                         </svg>
-                        Ver detalhes
+                        View details
                       </button>
                       {(request.Document?.DocumentAttachment?.length ?? 0) > 0 && (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-md" title="Possui anexos">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-md" title="Has attachments">
                           <Paperclip className="w-3.5 h-3.5 mr-1" />
                           {request.Document?.DocumentAttachment?.length}
                         </span>
@@ -215,7 +215,7 @@ export default function BadgeRequestsTab() {
       {filteredBadgeRequests.length > 0 && (
         <div className="mt-4 flex justify-between items-center text-sm text-gray-600">
           <span>
-            Mostrando {filteredBadgeRequests.length} de {badgeRequests.length} solicitação(ões)
+            Showing {filteredBadgeRequests.length} of {badgeRequests.length} request(s)
           </span>
         </div>
       )}

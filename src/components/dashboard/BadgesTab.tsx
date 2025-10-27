@@ -74,22 +74,22 @@ export default function BadgesTab() {
       if (result.success) {
         console.log(`Badge ${modalMode === 'edit' ? 'updated' : 'created'} successfully`)
         showSuccess(
-          `Badge ${modalMode === 'edit' ? 'atualizada' : 'criada'}!`,
-          `Badge "${data.title}" foi ${modalMode === 'edit' ? 'atualizada' : 'criada'} com sucesso`
+          `Badge ${modalMode === 'edit' ? 'updated' : 'created'}!`,
+          `Badge "${data.title}" was ${modalMode === 'edit' ? 'updated' : 'created'} successfully`
         )
         handleCloseModal()
       } else {
         console.error(`Error ${modalMode === 'edit' ? 'updating' : 'creating'} badge:`, result.error)
         showError(
-          `Erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} badge`,
+          `Error ${modalMode === 'edit' ? 'updating' : 'creating'} badge`,
           result.error
         )
       }
     } catch (error) {
       console.error('Unexpected error:', error)
       showError(
-        `Erro inesperado`,
-        `Ocorreu um erro ao ${modalMode === 'edit' ? 'atualizar' : 'criar'} a badge`
+        `Unexpected error`,
+        `An error occurred while ${modalMode === 'edit' ? 'updating' : 'creating'} the badge`
       )
     } finally {
       setIsLoading(false)
@@ -122,10 +122,10 @@ export default function BadgesTab() {
   const handleCopyBadgeId = async (badgeId: string) => {
     try {
       await navigator.clipboard.writeText(badgeId)
-      showSuccess('Badge ID copiado!', 'O ID da badge foi copiado para a área de transferência.')
+      showSuccess('Badge ID copied!', 'The badge ID was copied to clipboard.')
     } catch (error) {
       console.error('Error copying badge ID:', error)
-      showError('Erro ao copiar ID', 'Não foi possível copiar o ID da badge. Tente novamente.')
+      showError('Error copying ID', 'Failed to copy badge ID. Please try again.')
     }
   }
 
@@ -139,22 +139,22 @@ export default function BadgesTab() {
       if (result.success) {
         console.log('Badge deleted successfully')
         showSuccess(
-          'Badge excluída!',
-          `Badge "${deleteModal.badgeName}" foi excluída com sucesso`
+          'Badge deleted!',
+          `Badge "${deleteModal.badgeName}" was deleted successfully`
         )
         setDeleteModal({ isOpen: false })
       } else {
         console.error('Error deleting badge:', result.error)
         showError(
-          'Erro ao excluir badge',
+          'Error deleting badge',
           result.error
         )
       }
     } catch (error) {
       console.error('Unexpected error:', error)
       showError(
-        'Erro inesperado',
-        'Ocorreu um erro ao excluir a badge'
+        'Unexpected error',
+        'An error occurred while deleting the badge'
       )
     } finally {
       setIsLoading(false)

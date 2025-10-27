@@ -73,7 +73,11 @@ export default function CreateShopItemModal({
           const isDiscordItem = formData.categoryId === 1
           return {
             ...field,
-            label: isDiscordItem ? 'Discord Role' : 'Item Name'
+            label: isDiscordItem ? 'Discord Role' : 'Item Name',
+            description: isDiscordItem
+              ? '⚠️ IMPORTANT: The role name must match EXACTLY the role name in your Discord server (case-sensitive)'
+              : undefined,
+            placeholder: isDiscordItem ? 'Enter the exact Discord role name' : 'Enter your name'
           }
         }
         if (field.name === 'roleName') {

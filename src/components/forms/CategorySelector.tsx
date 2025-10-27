@@ -42,25 +42,25 @@ export function CategorySelector({ value, onChange, error, label, required, disa
   const handleCreateCategory = async () => {
     if (disabled) return
     if (!newCategoryName.trim()) {
-      showError('Nome inválido', 'Digite um nome para a nova categoria')
+      showError('Invalid name', 'Enter a name for the new category')
       return
     }
 
     setIsCreating(true)
     try {
       const result = await createCategory({ name: newCategoryName.trim() })
-      
+
       if (result.success) {
-        showSuccess('Categoria criada!', `Categoria "${newCategoryName}" foi criada com sucesso`)
+        showSuccess('Category created!', `Category "${newCategoryName}" was created successfully`)
         setNewCategoryName('')
         setIsCreating(false)
         // The categories will be refreshed automatically by the hook
       } else {
-        showError('Erro ao criar categoria', result.error || 'Falha ao criar categoria')
+        showError('Error creating category', result.error || 'Failed to create category')
         setIsCreating(false)
       }
     } catch {
-      showError('Erro inesperado', 'Ocorreu um erro ao criar a categoria')
+      showError('Unexpected error', 'An error occurred while creating the category')
       setIsCreating(false)
     }
   }
@@ -111,7 +111,7 @@ export function CategorySelector({ value, onChange, error, label, required, disa
           `}
         >
           <span className="block truncate">
-            {selectedCategory ? selectedCategory.name : 'Selecione uma categoria'}
+            {selectedCategory ? selectedCategory.name : 'Select a category'}
           </span>
           <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
         </button>
@@ -136,7 +136,7 @@ export function CategorySelector({ value, onChange, error, label, required, disa
               
               {categories.length === 0 && (
                 <div className="px-3 py-2 text-gray-500 text-sm">
-                  Nenhuma categoria encontrada
+                  No categories found
                 </div>
               )}
             </div>
@@ -146,7 +146,7 @@ export function CategorySelector({ value, onChange, error, label, required, disa
               <div className="flex items-center gap-2">
                 <input
                   type="text"
-                  placeholder="Nova categoria..."
+                  placeholder="New category..."
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -165,7 +165,7 @@ export function CategorySelector({ value, onChange, error, label, required, disa
                   className="flex items-center gap-1 px-2 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus className="h-3 w-3" />
-                  {isCreating ? 'Criando...' : 'Criar'}
+                  {isCreating ? 'Creating...' : 'Create'}
                 </button>
               </div>
             </div>

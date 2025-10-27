@@ -14,14 +14,13 @@ interface ImageUploadProps {
   disabled?: boolean;
 }
 
-export default function ImageUpload({ 
-  value, 
-  onChange, 
+export default function ImageUpload({
+  value,
+  onChange,
   className,
-  disabled = false 
+  disabled = false
 }: ImageUploadProps) {
   const [error, setError] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [fileInfo, setFileInfo] = useState<{ name: string; size: string } | null>(null);
 
@@ -95,8 +94,7 @@ export default function ImageUpload({
     const file = acceptedFiles[0];
     if (file) {
       setIsUploading(true);
-      setUploadProgress(0);
-      
+
       // Format file size
       const formatFileSize = (bytes: number) => {
         if (bytes === 0) return '0 Bytes';
@@ -114,17 +112,13 @@ export default function ImageUpload({
       // Compress image before encoding
       compressImage(file)
         .then((compressedDataUrl) => {
-          setUploadProgress(100);
-          setTimeout(() => {
-            onChange(compressedDataUrl);
-            setIsUploading(false);
-          }, 300);
+          onChange(compressedDataUrl);
+          setIsUploading(false);
         })
         .catch(() => {
           setError('Failed to process image');
           setIsUploading(false);
           setFileInfo(null);
-          setUploadProgress(0);
         });
     }
   }, [onChange]);
@@ -163,7 +157,6 @@ export default function ImageUpload({
     onChange('');
     setError(null);
     setFileInfo(null);
-    setUploadProgress(0);
     setIsUploading(false);
   };
 
@@ -282,14 +275,8 @@ export default function ImageUpload({
                         "text-[#856404] text-[12px] font-medium",
                         Campton.className
                       )}>
-                        Uploading... {uploadProgress}%
+                        Processing...
                       </span>
-                    </div>
-                    <div className="w-full bg-[#ffeaa7] rounded-full h-1.5 mt-2">
-                      <div 
-                        className="bg-[#ffc107] h-1.5 rounded-full transition-all duration-300"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
                     </div>
                   </div>
                 </div>
@@ -299,7 +286,6 @@ export default function ImageUpload({
                     e.stopPropagation();
                     setIsUploading(false);
                     setFileInfo(null);
-                    setUploadProgress(0);
                   }}
                   className="p-1.5 text-[#6c757d] hover:text-[#dc3545] hover:bg-[#f8d7da] rounded transition-colors"
                   title="Cancel upload"

@@ -1,7 +1,7 @@
 /**
- * Converte uma data no formato brasileiro para timestamp MySQL
- * @param dateString - Data no formato "DD/MM/YYYY - HH:MM" ou "DD/MM/YYYY"
- * @returns Timestamp no formato MySQL DATETIME (YYYY-MM-DD HH:MM:SS)
+ * Converts a Brazilian format date to MySQL timestamp
+ * @param dateString - Date in format "DD/MM/YYYY - HH:MM" or "DD/MM/YYYY"
+ * @returns Timestamp in MySQL DATETIME format (YYYY-MM-DD HH:MM:SS)
  */
 export function convertToTimestamp(dateString: string): string {
   if (!dateString || dateString.trim() === '') {
@@ -10,39 +10,39 @@ export function convertToTimestamp(dateString: string): string {
   }
 
   try {
-    // Remove espaços extras e normaliza
+    // Remove extra spaces and normalize
     const cleanDate = dateString.trim().replace(/\s+/g, ' ');
 
-    // Regex para capturar DD/MM/YYYY - HH:MM ou DD/MM/YYYY (com ou sem espaços ao redor do "-")
+    // Regex to capture DD/MM/YYYY - HH:MM or DD/MM/YYYY (with or without spaces around "-")
     const dateTimeRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*-?\s*(\d{1,2}):(\d{1,2}))?$/;
     const match = cleanDate.match(dateTimeRegex);
-    
+
     if (!match) {
       console.warn('Invalid date format:', dateString);
       const now = new Date();
       return formatToMySQLDateTime(now);
     }
-    
+
     const [, day, month, year, hours = '23', minutes = '59'] = match;
-    
-    // Criar data no fuso horário local
+
+    // Create date in local timezone
     const date = new Date(
       parseInt(year),
-      parseInt(month) - 1, // Mês é 0-indexed
+      parseInt(month) - 1, // Month is 0-indexed
       parseInt(day),
       parseInt(hours),
       parseInt(minutes),
       0,
       0
     );
-    
-    // Verificar se a data é válida
+
+    // Verify if date is valid
     if (isNaN(date.getTime())) {
       console.warn('Invalid date created:', dateString);
       const now = new Date();
       return formatToMySQLDateTime(now);
     }
-    
+
     return formatToMySQLDateTime(date);
   } catch (error) {
     console.error('Error converting date:', error);
@@ -52,9 +52,9 @@ export function convertToTimestamp(dateString: string): string {
 }
 
 /**
- * Formata uma data para o formato MySQL DATETIME
- * @param date - Objeto Date
- * @returns String no formato YYYY-MM-DD HH:MM:SS
+ * Formats a date to MySQL DATETIME format
+ * @param date - Date object
+ * @returns String in format YYYY-MM-DD HH:MM:SS
  */
 function formatToMySQLDateTime(date: Date): string {
   const year = date.getFullYear();
@@ -63,14 +63,14 @@ function formatToMySQLDateTime(date: Date): string {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
-  
+
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
 /**
- * Converte uma data no formato brasileiro para ISO string
- * @param dateString - Data no formato "DD/MM/YYYY - HH:MM" ou "DD/MM/YYYY"
- * @returns Data em formato ISO string
+ * Converts a Brazilian format date to ISO string
+ * @param dateString - Date in format "DD/MM/YYYY - HH:MM" or "DD/MM/YYYY"
+ * @returns Date in ISO string format
  */
 export function convertToISOString(dateString: string): string {
   const timestamp = convertToTimestamp(dateString);
@@ -78,19 +78,19 @@ export function convertToISOString(dateString: string): string {
 }
 
 /**
- * Valida se uma data está no formato brasileiro correto
- * @param dateString - Data para validar
- * @returns true se válida
+ * Validates if a date is in the correct Brazilian format
+ * @param dateString - Date to validate
+ * @returns true if valid
  */
 export function isValidBrazilianDate(dateString: string): boolean {
   if (!dateString || dateString.trim() === '') {
-    return true; // Data vazia é considerada válida (opcional)
+    return true; // Empty date is considered valid (optional)
   }
 
-  // Normalizar espaços e remover múltiplos espaços
+  // Normalize spaces and remove multiple spaces
   const normalized = dateString.trim().replace(/\s+/g, ' ');
 
-  // Aceitar tanto "DD/MM/YYYY - HH:MM" quanto "DD/MM/YYYY-HH:MM" (com ou sem espaços)
+  // Accept both "DD/MM/YYYY - HH:MM" and "DD/MM/YYYY-HH:MM" (with or without spaces)
   const dateTimeRegex = /^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s*-?\s*(\d{1,2}):(\d{1,2}))?$/;
   const match = normalized.match(dateTimeRegex);
 
@@ -100,7 +100,7 @@ export function isValidBrazilianDate(dateString: string): boolean {
 
   const [, day, month, year, hours = '0', minutes = '0'] = match;
 
-  // Validações básicas
+  // Basic validations
   const dayNum = parseInt(day);
   const monthNum = parseInt(month);
   const yearNum = parseInt(year);
@@ -113,7 +113,7 @@ export function isValidBrazilianDate(dateString: string): boolean {
   if (hoursNum < 0 || hoursNum > 23) return false;
   if (minutesNum < 0 || minutesNum > 59) return false;
 
-  // Verificar se a data é válida criando um objeto Date
+  // Verify if date is valid by creating a Date object
   try {
     const date = new Date(yearNum, monthNum - 1, dayNum, hoursNum, minutesNum);
     return date.getFullYear() === yearNum &&
